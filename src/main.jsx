@@ -33,7 +33,11 @@ function matchesFilter(day, filter){
 function load(){try{return JSON.parse(localStorage.getItem(key))||initialDays}catch{return initialDays}}
 function mapsUrl(place){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`}
 function App(){
- const [days,setDays]=useState(load); const [tab,setTab]=useState('roteiro'); const [routeFilter,setRouteFilter]=useState('Todos'); const [selected,setSelected]=useState(null); const [editing,setEditing]=useState(null); const [showForm,setShowForm]=useState(false); const [done,setDone]=useState(()=>JSON.parse(localStorage.getItem('tripmate-done')||'{}'));
+ useEffect(()=>{
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+ },[]);
+ const params=new URLSearchParams(window.location.search); const initialTab=params.get('view')==='inicio'?'inicio':'roteiro';
+ const [days,setDays]=useState(load); const [tab,setTab]=useState(initialTab); const [routeFilter,setRouteFilter]=useState('Todos'); const [selected,setSelected]=useState(null); const [editing,setEditing]=useState(null); const [showForm,setShowForm]=useState(false); const [done,setDone]=useState(()=>JSON.parse(localStorage.getItem('tripmate-done')||'{}'));
  useEffect(()=>localStorage.setItem(key,JSON.stringify(days)),[days]); useEffect(()=>localStorage.setItem('tripmate-done',JSON.stringify(done)),[done]);
  const today=days.find(d=>!done[d.date])||days[1];
  const completed=Object.values(done).filter(Boolean).length;
