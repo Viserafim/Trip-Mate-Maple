@@ -1,3 +1,17 @@
 {
-  "name":"TripMate Lite","short_name":"TripMate","start_url":".","display":"standalone","background_color":"#f5f7fb","theme_color":"#0b5bd3","lang":"pt-BR","icons":[]
+  "name": "TripMate Lite",
+  "short_name": "TripMate",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#0b5bd3",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "./icon-canada.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
