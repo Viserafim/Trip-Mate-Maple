@@ -1,49 +1,105 @@
-import React, {useEffect, useState} from 'react';
-import {createRoot} from 'react-dom/client';
+import React, {useEffect, useMemo, useState} from 'react'
+import {createRoot} from 'react-dom/client'
 import {
   CalendarDays,
+  CheckCircle2,
   ChevronRight,
   Clock3,
-  MapPin,
-  Plus,
-  ArrowLeft,
-  Check,
-  Map,
   Home,
-  Navigation,
-  Pencil,
-  Trash2,
-  ExternalLink,
+  Map,
+  MapPin,
   Menu,
-  X,
-  MoreHorizontal,
-  Search,
-  Info,
-  Move
-} from 'lucide-react';
-import './styles.css';
+  Move,
+  Plus,
+  Route,
+  Trash2,
+  X
+} from 'lucide-react'
+import './styles.css'
 
-const initialDays = [
-  {date:'07/09/2026',dow:'Segunda-feira',title:'Chegada em Barrie',city:'Barrie',icon:'✈️',notes:'Chegada à noite, acomodação e descanso.',activities:[{time:'20:30',title:'Chegada à casa / acomodação',place:'Barrie',duration:'1h',desc:'Noite tranquila após a viagem.'}]},
-  {date:'08/09/2026',dow:'Terça-feira',title:'Barrie: Downtown + Waterfront + Lake Simcoe',city:'Barrie',icon:'🌳',notes:'Dia leve para começar a viagem.',activities:[{time:'09:15',title:'Downtown Barrie',place:'Downtown Barrie',duration:'1h',desc:'Explorar a região, lojas e cafés.'},{time:'10:15',title:'Waterfront / Heritage Park',place:'Barrie Waterfront',duration:'1h30',desc:'Caminhada e fotos.'},{time:'11:45',title:'Passeio pela orla / Lake Simcoe',place:'Lake Simcoe',duration:'45 min',desc:'Passeio pela orla.'},{time:'12:30',title:'Almoço',place:'Downtown Barrie / Waterfront',duration:'1h30',desc:'Almoço na região.'},{time:'14:00',title:'Lojas / centro',place:'Downtown Barrie',duration:'1h30',desc:'Compras e passeio pelo centro.'},{time:'15:30',title:'Lake Simcoe / retorno pela orla',place:'Barrie',duration:'1h30',desc:'Finalizar o dia com passeio pela orla.'}]},
-  {date:'09/09/2026',dow:'Quarta-feira',title:"Toronto: CN Tower + Ripley's + Waterfront",city:'Toronto',icon:'🗼',notes:'Começar cedo para aproveitar as atrações.',activities:[{time:'07:15',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento de carro.'},{time:'09:15',title:'CN Tower',place:'Downtown Toronto',duration:'1h30',desc:'Mirante e principais áreas da atração.'},{time:'10:50',title:"Ripley's Aquarium",place:'Downtown Toronto',duration:'1h40',desc:'Visita ao aquário.'},{time:'12:45',title:'Almoço',place:'Harbourfront / Downtown',duration:'1h15',desc:'Almoço na região.'},{time:'14:00',title:'Waterfront / Harbourfront',place:'Toronto Waterfront',duration:'1h30',desc:'Caminhada e fotos.'},{time:'15:30',title:'Downtown',place:'Downtown Toronto',duration:'1h30',desc:'Passeio pelo centro.'},{time:'17:00',title:'Café / lanche',place:'Downtown',duration:'1h',desc:'Pausa antes do retorno.'}]},
-  {date:'10/09/2026',dow:'Quinta-feira',title:'Barrie: dia livre / descanso / compras',city:'Barrie',icon:'🛍️',notes:'Dia de recuperação e flexibilidade.',activities:[{time:'09:30',title:'Manhã livre',place:'Barrie',duration:'2h',desc:'Descanso ou atividade espontânea.'},{time:'11:30',title:'Compras / centro',place:'Barrie',duration:'2h',desc:'Compras e passeio.'},{time:'14:00',title:'Tarde livre',place:'Barrie',duration:'3h',desc:'Descanso ou ajustes do roteiro.'}]},
-  {date:'11/09/2026',dow:'Sexta-feira',title:'Niagara Falls + Niagara-on-the-Lake',city:'Niagara Falls',icon:'💦',notes:"Roteiro principal do dia. Opção alternativa: Canada's Wonderland.",activities:[{time:'06:30',title:'Saída de Barrie',place:'Barrie → Niagara Falls',duration:'~2h',desc:'Deslocamento de carro.'},{time:'09:00',title:'Niagara Falls',place:'Table Rock / Fallsview',duration:'2h',desc:'Cataratas, mirantes e fotos.'},{time:'12:00',title:'Almoço',place:'Table Rock / Fallsview',duration:'1h15',desc:'Almoço próximo às cataratas.'},{time:'13:15',title:'Niagara-on-the-Lake',place:'Niagara-on-the-Lake',duration:'2h',desc:'Centro histórico e passeio.'},{time:'16:00',title:'Retorno a Barrie',place:'Niagara → Barrie',duration:'~2h',desc:'Retorno.'}]},
-  {date:'12/09/2026',dow:'Sábado',title:'Toronto Islands + Harbourfront + Distillery District',city:'Toronto',icon:'🏝️',notes:'Chegar cedo ao ferry.',activities:[{time:'07:00',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento.'},{time:'09:30',title:'Toronto Islands',place:'Toronto Islands',duration:'3h',desc:'Ferry, ilhas, caminhada e vistas do skyline.'},{time:'12:30',title:'Almoço',place:'Toronto Islands',duration:'1h',desc:'Almoço na região.'},{time:'13:30',title:'Harbourfront',place:'Harbourfront',duration:'2h',desc:'Passeio pela orla.'},{time:'15:30',title:'Distillery District',place:'Distillery District',duration:'2h',desc:'Arquitetura, lojas e cafés.'}]},
-  {date:'13/09/2026',dow:'Domingo',title:"Canada's Wonderland",city:'Vaughan',icon:'🎢',notes:'Dia inteiro no parque.',activities:[{time:'08:00',title:'Saída de Barrie',place:'Barrie → Vaughan',duration:'~1h',desc:'Deslocamento.'},{time:'09:15',title:"Canada's Wonderland",place:'Vaughan',duration:'dia inteiro',desc:'Parque, atrações e áreas temáticas.'},{time:'13:00',title:'Almoço',place:'Dentro do parque',duration:'1h',desc:'Almoço no parque.'}]},
-  {date:'14/09/2026',dow:'Segunda-feira',title:'Dia coringa / ajustes conforme clima',city:'Livre',icon:'☀️',notes:'Reservar para clima, descanso ou repetir uma atração.',activities:[{time:'09:00',title:'Manhã livre',place:'Barrie',duration:'2h',desc:'Descanso.'},{time:'11:00',title:'Compras / Barrie',place:'Barrie',duration:'2h',desc:'Compras ou passeio.'},{time:'14:30',title:'Atividade conforme clima',place:'A definir',duration:'2h30',desc:'Usar este espaço para ajustes.'}]},
-  {date:'15/09/2026',dow:'Terça-feira',title:'ROM + Yorkville + Blue Jays às 19h07',city:'Toronto',icon:'⚾',notes:'O jogo é o compromisso principal.',activities:[{time:'07:30',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento.'},{time:'09:30',title:'Royal Ontario Museum',place:'Toronto',duration:'2h30',desc:'Visita ao ROM.'},{time:'12:00',title:'Almoço',place:'Yorkville / Bloor',duration:'1h15',desc:'Almoço na região.'},{time:'13:15',title:'Yorkville',place:'Yorkville',duration:'1h45',desc:'Passeio pela região.'},{time:'15:00',title:'Café / descanso',place:'Yorkville',duration:'1h',desc:'Pausa.'},{time:'16:00',title:'Deslocamento para estádio',place:'Yorkville → Rogers Centre',duration:'30 min',desc:'Ir com antecedência.'},{time:'16:30',title:'Jantar / lanche',place:'Rogers Centre',duration:'1h',desc:'Alimentação antes do jogo.'},{time:'19:07',title:'Blue Jays',place:'Rogers Centre',duration:'~3h',desc:'Jogo às 19h07.'}]},
-  {date:'16/09/2026',dow:'Quarta-feira',title:'Barrie: dia livre / descanso',city:'Barrie',icon:'☕',notes:'Dia de recuperação.',activities:[{time:'09:30',title:'Manhã livre',place:'Barrie',duration:'3h',desc:'Descanso.'},{time:'13:00',title:'Almoço',place:'Barrie',duration:'1h30',desc:'Almoço.'},{time:'14:30',title:'Tarde livre',place:'Barrie',duration:'3h',desc:'Descanso ou passeio.'}]},
-  {date:'17/09/2026',dow:'Quinta-feira',title:'Casa Loma + Spadina + Toronto complementar',city:'Toronto',icon:'🏰',notes:'Dia cultural.',activities:[{time:'07:30',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento.'},{time:'09:30',title:'Casa Loma',place:'Toronto',duration:'2h',desc:'Visita ao castelo.'},{time:'12:00',title:'Almoço',place:'Spadina / Bloor / Kensington',duration:'1h',desc:'Almoço na região.'},{time:'13:00',title:'Spadina',place:'Spadina',duration:'1h30',desc:'Passeio pela região.'},{time:'14:30',title:'Toronto complementar',place:'Toronto',duration:'2h30',desc:'Escolher pontos próximos conforme disposição.'}]},
-  {date:'18/09/2026',dow:'Sexta-feira',title:'Blue Mountain + Collingwood + Wasaga Beach',city:'Blue Mountain',icon:'🏔️',notes:'Dia de natureza.',activities:[{time:'08:00',title:'Saída de Barrie',place:'Barrie → Blue Mountain',duration:'~1h15',desc:'Deslocamento.'},{time:'09:15',title:'Blue Mountain Village',place:'Blue Mountain',duration:'2h15',desc:'Passeio pelo Village.'},{time:'11:30',title:'Atividades da montanha',place:'Blue Mountain',duration:'1h30',desc:'Atividades e mirantes.'},{time:'13:00',title:'Almoço',place:'Blue Mountain Village',duration:'1h',desc:'Almoço.'},{time:'14:00',title:'Atividades / caminhada',place:'Blue Mountain',duration:'1h30',desc:'Caminhada.'},{time:'15:30',title:'Passeio',place:'Collingwood',duration:'1h',desc:'Centro de Collingwood.'},{time:'16:30',title:'Wasaga Beach',place:'Wasaga Beach',duration:'1h',desc:'Parada na praia.'}]},
-  {date:'19/09/2026',dow:'Sábado',title:'Niagara Falls + Cruise + Journey Behind the Falls',city:'Niagara Falls',icon:'🚢',notes:'Dia longo.',activities:[{time:'06:30',title:'Saída de Barrie',place:'Barrie → Niagara Falls',duration:'~2h',desc:'Deslocamento.'},{time:'09:00',title:'Niagara Falls',place:'Niagara Falls',duration:'1h30',desc:'Mirantes.'},{time:'10:30',title:'Cruise',place:'Niagara Falls',duration:'1h',desc:'Cruzeiro pelas cataratas.'},{time:'12:00',title:'Almoço',place:'Fallsview / Table Rock',duration:'1h15',desc:'Almoço.'},{time:'13:15',title:'Journey Behind the Falls',place:'Niagara Falls',duration:'1h30',desc:'Experiência atrás das cataratas.'},{time:'15:00',title:'Passeio livre',place:'Niagara Falls',duration:'1h30',desc:'Fotos e pontos próximos.'},{time:'17:00',title:'Retorno a Barrie',place:'Niagara → Barrie',duration:'~2h',desc:'Retorno.'}]},
-  {date:'20/09/2026',dow:'Domingo',title:'Barrie: dia livre / compras',city:'Barrie',icon:'🧳',notes:'Último dia. Organizar malas.',activities:[{time:'09:30',title:'Dia livre',place:'Barrie',duration:'3h',desc:'Passeio leve.'},{time:'13:00',title:'Almoço',place:'Barrie',duration:'1h30',desc:'Almoço.'},{time:'14:30',title:'Compras / organização',place:'Barrie',duration:'2h30',desc:'Últimas compras e malas.'}]},
-  {date:'21/09/2026',dow:'Segunda-feira',title:'Retorno — Barrie → aeroporto',city:'Retorno',icon:'✈️',notes:'Calcular saída conforme horário do voo.',activities:[{time:'Manhã',title:'Saída de Barrie',place:'Barrie → aeroporto',duration:'—',desc:'Retorno ao aeroporto.'}]}
-];
+const STORAGE_KEY='tripmate-days-v4'
 
-const key = 'tripmate-lite-days-v1';
+const initialDays=[
+  {date:'07/09/2026',title:'Chegada em Barrie',city:'Barrie',activities:[
+    {time:'15:00',title:'Chegada e acomodação',place:'Barrie',duration:'2h',type:'Viagem',priority:'Alta',info:'Chegada em Barrie e acomodação.'}
+  ]},
+  {date:'08/09/2026',title:'Barrie Downtown + Waterfront',city:'Barrie',activities:[
+    {time:'09:00',title:'Barrie Downtown',place:'Downtown Barrie',duration:'2h',type:'Passeio',priority:'Média',info:'Explorar o centro de Barrie.'},
+    {time:'11:30',title:'Barrie Waterfront',place:'Barrie Waterfront',duration:'2h',type:'Natureza',priority:'Alta',info:'Passeio pela orla do Lake Simcoe.'}
+  ]},
+  {date:'09/09/2026',title:'Toronto — CN Tower + Ripley’s',city:'Toronto',activities:[
+    {time:'09:00',title:'CN Tower',place:'CN Tower',duration:'2h',type:'Passeio',priority:'Alta',info:'Visita à CN Tower.'},
+    {time:'11:30',title:'Ripley’s Aquarium',place:'Ripley’s Aquarium of Canada',duration:'2h',type:'Passeio',priority:'Alta',info:'Aquário próximo à CN Tower.'},
+    {time:'14:00',title:'Toronto Waterfront',place:'Toronto Waterfront',duration:'2h',type:'Natureza',priority:'Média',info:'Passeio pela região do waterfront.'}
+  ]},
+  {date:'10/09/2026',title:'Barrie — descanso e compras',city:'Barrie',activities:[
+    {time:'10:00',title:'Dia livre / compras',place:'Barrie',duration:'4h',type:'Livre',priority:'Baixa',info:'Dia flexível para descanso e compras.'}
+  ]},
+  {date:'11/09/2026',title:'Niagara Falls + Niagara-on-the-Lake',city:'Natureza',activities:[
+    {time:'08:00',title:'Niagara Falls',place:'Niagara Falls',duration:'3h',type:'Natureza',priority:'Alta',info:'Explorar as cataratas.'},
+    {time:'13:00',title:'Niagara-on-the-Lake',place:'Niagara-on-the-Lake',duration:'3h',type:'Passeio',priority:'Alta',info:'Passeio pela cidade histórica.'}
+  ]},
+  {date:'12/09/2026',title:'Toronto Islands + Harbourfront + Distillery',city:'Toronto',activities:[
+    {time:'09:00',title:'Toronto Islands',place:'Toronto Islands',duration:'3h',type:'Natureza',priority:'Alta',info:'Passeio pelas ilhas.'},
+    {time:'13:00',title:'Harbourfront',place:'Harbourfront',duration:'2h',type:'Passeio',priority:'Média',info:'Região do waterfront.'},
+    {time:'16:00',title:'Distillery District',place:'Distillery District',duration:'2h',type:'Passeio',priority:'Alta',info:'Visita ao Distillery District.'}
+  ]},
+  {date:'13/09/2026',title:'Canada’s Wonderland',city:'Toronto',activities:[
+    {time:'10:00',title:'Canada’s Wonderland',place:'Canada’s Wonderland',duration:'8h',type:'Passeio',priority:'Alta',info:'Dia completo no parque.'}
+  ]},
+  {date:'14/09/2026',title:'Dia coringa / clima',city:'Toronto',activities:[
+    {time:'10:00',title:'Dia coringa',place:'Toronto',duration:'6h',type:'Livre',priority:'Média',info:'Dia reservado para ajustes de roteiro ou clima.'}
+  ]},
+  {date:'15/09/2026',title:'ROM + Yorkville + Blue Jays',city:'Toronto',activities:[
+    {time:'10:00',title:'Royal Ontario Museum',place:'Royal Ontario Museum',duration:'3h',type:'Passeio',priority:'Alta',info:'Visita ao ROM.'},
+    {time:'14:00',title:'Yorkville',place:'Yorkville',duration:'2h',type:'Passeio',priority:'Média',info:'Passeio pela região.'},
+    {time:'19:07',title:'Blue Jays',place:'Rogers Centre',duration:'3h',type:'Esporte',priority:'Alta',info:'Jogo dos Blue Jays.'}
+  ]},
+  {date:'16/09/2026',title:'Barrie — descanso',city:'Barrie',activities:[
+    {time:'10:00',title:'Dia livre',place:'Barrie',duration:'4h',type:'Livre',priority:'Baixa',info:'Descanso e atividades flexíveis.'}
+  ]},
+  {date:'17/09/2026',title:'Casa Loma + Spadina + Toronto',city:'Toronto',activities:[
+    {time:'10:00',title:'Casa Loma',place:'Casa Loma',duration:'3h',type:'Passeio',priority:'Alta',info:'Visita à Casa Loma.'},
+    {time:'14:00',title:'Spadina',place:'Spadina',duration:'2h',type:'Passeio',priority:'Média',info:'Explorar a região.'}
+  ]},
+  {date:'18/09/2026',title:'Blue Mountain + Collingwood + Wasaga Beach',city:'Natureza',activities:[
+    {time:'09:00',title:'Blue Mountain',place:'Blue Mountain',duration:'3h',type:'Natureza',priority:'Alta',info:'Passeio em Blue Mountain.'},
+    {time:'13:00',title:'Collingwood',place:'Collingwood',duration:'2h',type:'Passeio',priority:'Média',info:'Passeio pela cidade.'},
+    {time:'16:00',title:'Wasaga Beach',place:'Wasaga Beach',duration:'2h',type:'Natureza',priority:'Alta',info:'Visita à praia.'}
+  ]},
+  {date:'19/09/2026',title:'Niagara Falls + Cruise + Journey Behind the Falls',city:'Natureza',activities:[
+    {time:'08:00',title:'Niagara Falls',place:'Niagara Falls',duration:'2h',type:'Natureza',priority:'Alta',info:'Explorar as cataratas.'},
+    {time:'10:30',title:'Cruise',place:'Niagara Falls',duration:'1h',type:'Passeio',priority:'Alta',info:'Cruzeiro pelas cataratas.'},
+    {time:'13:00',title:'Journey Behind the Falls',place:'Niagara Falls',duration:'2h',type:'Passeio',priority:'Alta',info:'Atração Journey Behind the Falls.'}
+  ]},
+  {date:'20/09/2026',title:'Barrie — descanso',city:'Barrie',activities:[
+    {time:'10:00',title:'Dia livre',place:'Barrie',duration:'4h',type:'Livre',priority:'Baixa',info:'Último dia livre em Barrie.'}
+  ]},
+  {date:'21/09/2026',title:'Retorno — Barrie → aeroporto',city:'Barrie',activities:[
+    {time:'08:00',title:'Saída de Barrie',place:'Barrie',duration:'4h',type:'Viagem',priority:'Alta',info:'Retorno ao aeroporto.'}
+  ]}
+]
 
-const natureTerms = [
+function parseDate(date){
+  const [d,m,y]=date.split('/').map(Number)
+  return new Date(y,m-1,d)
+}
+
+function sortDays(list){
+  return [...list].sort((a,b)=>parseDate(a.date)-parseDate(b.date))
+}
+
+function dateToISO(date){
+  const [d,m,y]=date.split('/').map(Number)
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+}
+
+function isoToBR(iso){
+  const [y,m,d]=iso.split('-')
+  return `${d}/${m}/${y}`
+}
+
+const natureTerms=[
   'niagara',
   'blue mountain',
   'wasaga',
@@ -57,441 +113,228 @@ const natureTerms = [
   'falls',
   'cruise',
   'cataratas'
-];
+]
 
 function matchesFilter(day,filter){
-  if(filter === 'Todos') return true;
+  if(filter==='Todos') return true
 
-  if(filter === 'Barrie'){
-    return day.city === 'Barrie' ||
-      /barrie/i.test(
-        day.title + ' ' +
-        day.activities.map(a=>a.place).join(' ')
-      );
+  const text=(
+    day.title+' '+
+    day.city+' '+
+    day.activities.map(a=>a.place+' '+a.title).join(' ')
+  ).toLowerCase()
+
+  if(filter==='Barrie') return day.city==='Barrie' || text.includes('barrie')
+
+  if(filter==='Toronto'){
+    return day.city==='Toronto' ||
+      /toronto|cn tower|ripley|rom|yorkville|casa loma|spadina|blue jays/.test(text)
   }
 
-  if(filter === 'Toronto'){
-    return day.city === 'Toronto' ||
-      /toronto|cn tower|ripley|rom|yorkville|casa loma|spadina|blue jays/i.test(
-        day.title + ' ' +
-        day.activities.map(a=>a.place).join(' ')
-      );
+  if(filter==='Natureza'){
+    return natureTerms.some(t=>text.includes(t))
   }
 
-  if(filter === 'Natureza'){
-    return natureTerms.some(term =>
-      new RegExp(term,'i').test(
-        day.title + ' ' +
-        day.activities.map(
-          a=>a.place+' '+a.title
-        ).join(' ')
-      )
-    );
-  }
-
-  return true;
-}
-
-function load(){
-  try{
-    return JSON.parse(
-      localStorage.getItem(key)
-    ) || initialDays;
-  }catch{
-    return initialDays;
-  }
-}
-
-function mapsUrl(place){
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
+  return true
 }
 
 function App(){
+  const [days,setDays]=useState(()=>{
+    try{
+      const saved=localStorage.getItem(STORAGE_KEY)
+      return saved ? sortDays(JSON.parse(saved)) : initialDays
+    }catch{
+      return initialDays
+    }
+  })
+
+  const [view,setView]=useState(()=>{
+    const params=new URLSearchParams(window.location.search)
+    return params.get('view')==='roteiro' ? 'roteiro' : 'roteiro'
+  })
+
+  const [selected,setSelected]=useState(null)
+  const [filter,setFilter]=useState('Todos')
+  const [movingDay,setMovingDay]=useState(null)
+
+  useEffect(()=>{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(days))
+  },[days])
 
   useEffect(()=>{
     if('serviceWorker' in navigator){
-      navigator.serviceWorker.register(
-        '/Trip-Mate-Maple/sw.js',
-        {
-          scope:'/Trip-Mate-Maple/'
-        }
-      ).catch(()=>{});
+      navigator.serviceWorker.register('/Trip-Mate-Maple/sw.js',{
+        scope:'/Trip-Mate-Maple/'
+      }).catch(()=>{})
     }
-  },[]);
+  },[])
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-  const initialTab =
-    params.get('view') === 'inicio'
-      ? 'inicio'
-      : 'roteiro';
-
-  const [days,setDays] =
-    useState(load);
-
-  const [tab,setTab] =
-    useState(initialTab);
-
-  const [routeFilter,setRouteFilter] =
-    useState('Todos');
-
-  const [selected,setSelected] =
-    useState(null);
-
-  const [editing,setEditing] =
-    useState(null);
-
-  const [showForm,setShowForm] =
-    useState(false);
-
-  const [movingDay,setMovingDay] =
-    useState(null);
-
-  const [done,setDone] =
-    useState(
-      () => JSON.parse(
-        localStorage.getItem(
-          'tripmate-done'
-        ) || '{}'
-      )
-    );
-
-  useEffect(()=>{
-    localStorage.setItem(
-      key,
-      JSON.stringify(days)
-    );
-  },[days]);
-
-  useEffect(()=>{
-    localStorage.setItem(
-      'tripmate-done',
-      JSON.stringify(done)
-    );
-  },[done]);
-
-  const today =
-    days.find(d=>!done[d.date]) ||
-    days[1];
-
-  const completed =
-    Object.values(done)
-      .filter(Boolean)
-      .length;
-
-  const addActivity =
-    (dayDate,activity)=>
-      setDays(ds =>
-        ds.map(d =>
-          d.date === dayDate
-            ? {
-                ...d,
-                activities:[
-                  ...d.activities,
-                  activity
-                ].sort(
-                  (a,b)=>
-                    String(a.time)
-                      .localeCompare(
-                        String(b.time)
-                      )
-                )
-              }
-            : d
-        )
-      );
-
-  const updateActivity =
-    (dayDate,index,activity)=>
-      setDays(ds =>
-        ds.map(d =>
-          d.date === dayDate
-            ? {
-                ...d,
-                activities:
-                  d.activities.map(
-                    (a,i)=>
-                      i === index
-                        ? activity
-                        : a
-                  )
-              }
-            : d
-        )
-      );
-
-  const deleteActivity =
-    (dayDate,index)=>
-      setDays(ds =>
-        ds.map(d =>
-          d.date === dayDate
-            ? {
-                ...d,
-                activities:
-                  d.activities.filter(
-                    (_,i)=>i !== index
-                  )
-              }
-            : d
-        )
-      );
-
-  function moveWholeDay(newDate){
-
-    if(!movingDay) return;
-
-    if(newDate === movingDay.date){
-      alert(
-        'Escolha uma data diferente da atual.'
-      );
-      return;
-    }
-
-    const destination =
-      days.find(d=>d.date === newDate);
-
-    if(destination){
-      alert(
-        `A data ${newDate.slice(0,5)} já possui um roteiro. Na próxima etapa vamos tratar a opção de mesclar ou trocar os dias.`
-      );
-      return;
-    }
-
-    const updated =
-      days.map(d =>
-        d.date === movingDay.date
-          ? {
-              ...d,
-              date:newDate
-            }
-          : d
-      );
-
-    updated.sort(
-      (a,b)=>
-        parseDate(a.date) -
-        parseDate(b.date)
-    );
-
-    setDays(updated);
-
-    setSelected(
-      updated.find(
-        d=>d.date === newDate
-      ) || null
-    );
-
-    setMovingDay(null);
+  function updateDays(next){
+    setDays(sortDays(next))
   }
 
-  function parseDate(date){
-    const [day,month,year] =
-      date.split('/').map(Number);
+  function toggleComplete(date){
+    updateDays(days.map(d=>
+      d.date===date ? {...d,completed:!d.completed} : d
+    ))
+  }
 
-    return new Date(
-      year,
-      month-1,
-      day
-    ).getTime();
+  function deleteActivity(date,index){
+    const next=days.map(d=>{
+      if(d.date!==date) return d
+      return {
+        ...d,
+        activities:d.activities.filter((_,i)=>i!==index)
+      }
+    })
+    updateDays(next)
+  }
+
+  function addActivity(date,activity){
+    updateDays(days.map(d=>
+      d.date===date
+        ? {...d,activities:[...d.activities,activity]}
+        : d
+    ))
+  }
+
+  function moveWholeDay(sourceDate,newDate,mode='move'){
+    if(sourceDate===newDate) return
+
+    const source=days.find(d=>d.date===sourceDate)
+    const destination=days.find(d=>d.date===newDate)
+
+    if(!source) return
+
+    if(!destination){
+      updateDays(
+        days.map(d=>
+          d.date===sourceDate
+            ? {...d,date:newDate}
+            : d
+        )
+      )
+      setSelected({...source,date:newDate})
+      setMovingDay(null)
+      return
+    }
+
+    if(mode==='swap'){
+      const next=days.map(d=>{
+        if(d.date===sourceDate){
+          return {...d,date:newDate}
+        }
+
+        if(d.date===newDate){
+          return {...d,date:sourceDate}
+        }
+
+        return d
+      })
+
+      updateDays(next)
+      setSelected({...source,date:newDate})
+      setMovingDay(null)
+      return
+    }
+
+    if(mode==='merge'){
+      const mergedActivities=[
+        ...destination.activities,
+        ...source.activities
+      ]
+
+      const next=days.map(d=>{
+        if(d.date===newDate){
+          return {
+            ...d,
+            activities:mergedActivities
+          }
+        }
+
+        if(d.date===sourceDate){
+          return {
+            ...d,
+            title:'Dia livre / ajustes',
+            city:d.city || 'Livre',
+            activities:[]
+          }
+        }
+
+        return d
+      })
+
+      updateDays(next)
+      setSelected({
+        ...destination,
+        activities:mergedActivities
+      })
+      setMovingDay(null)
+    }
   }
 
   return (
     <div className="app">
-
       <header className="topbar">
-
         <div className="brand">
-
           <span className="leaf"></span>
-
           <div>
-            <b>
-              Trip<span>Mate</span>
-            </b>
+            <strong>TripMate</strong>
+            <small>Canadá 2026</small>
           </div>
-
         </div>
-
-        <button
-          className="iconBtn"
-          onClick={() =>
-            alert(
-              'TripMate salva o roteiro no próprio aparelho.'
-            )
-          }
-        >
-          <Menu size={21}/>
-        </button>
-
       </header>
 
-      {tab === 'inicio' && (
-        <HomeScreen
-          day={today}
-          completed={completed}
-          onOpen={()=>{
-            setTab('roteiro');
-            setSelected(today);
-          }}
-        />
-      )}
+      <main className="content">
+        {view==='inicio' && (
+          <HomeScreen
+            days={days}
+            onOpen={()=>setView('roteiro')}
+          />
+        )}
 
-      {tab === 'roteiro' && !selected && (
-        <Schedule
-          days={days}
-          done={done}
-          filter={routeFilter}
-          setFilter={setRouteFilter}
-          onSelect={setSelected}
-        />
-      )}
+        {view==='roteiro' && (
+          <Schedule
+            days={days}
+            filter={filter}
+            setFilter={setFilter}
+            onSelect={setSelected}
+          />
+        )}
 
-      {tab === 'roteiro' && selected && (
+        {view==='mapa' && (
+          <MapScreen days={days}/>
+        )}
+
+        {view==='mais' && (
+          <MoreScreen/>
+        )}
+      </main>
+
+      <BottomNav view={view} setView={setView}/>
+
+      {selected && (
         <DayDetail
           day={selected}
-          done={!!done[selected.date]}
-          onBack={()=>setSelected(null)}
-          onDone={() =>
-            setDone(x=>({
-              ...x,
-              [selected.date]:
-                !x[selected.date]
-            }))
-          }
-          onMove={() =>
-            setMovingDay(selected)
-          }
-          onAdd={()=>{
-            setEditing({
-              day:selected,
-              date:selected.date,
-              index:null
-            });
-            setShowForm(true);
+          onClose={()=>setSelected(null)}
+          onMove={()=>setMovingDay(selected)}
+          onToggleComplete={()=>{
+            toggleComplete(selected.date)
+            setSelected(prev=>prev ? {...prev,completed:!prev.completed}:prev)
           }}
-          onEdit={(i)=>{
-            setEditing({
-              day:selected,
-              date:selected.date,
-              index:i
-            });
-            setShowForm(true);
+          onDelete={(index)=>{
+            deleteActivity(selected.date,index)
+            setSelected(prev=>prev ? {
+              ...prev,
+              activities:prev.activities.filter((_,i)=>i!==index)
+            }:prev)
           }}
-          onDelete={(i)=>
-            deleteActivity(
-              selected.date,
-              i
-            )
-          }
-        />
-      )}
-
-      {tab === 'mapa' && (
-        <MapScreen days={days}/>
-      )}
-
-      {tab === 'mais' && (
-        <MoreScreen
-          completed={completed}
-          days={days}
-        />
-      )}
-
-      <nav className="bottom">
-
-        <button
-          className={
-            tab === 'inicio'
-              ? 'active'
-              : ''
-          }
-          onClick={()=>{
-            setTab('inicio');
-            setSelected(null);
-          }}
-        >
-          <Home/>
-          <span>Início</span>
-        </button>
-
-        <button
-          className={
-            tab === 'roteiro'
-              ? 'active'
-              : ''
-          }
-          onClick={()=>{
-            setTab('roteiro');
-            setSelected(null);
-          }}
-        >
-          <CalendarDays/>
-          <span>Roteiro</span>
-        </button>
-
-        <button
-          className={
-            tab === 'mapa'
-              ? 'active'
-              : ''
-          }
-          onClick={()=>{
-            setTab('mapa');
-            setSelected(null);
-          }}
-        >
-          <Map/>
-          <span>Mapa</span>
-        </button>
-
-        <button
-          className={
-            tab === 'mais'
-              ? 'active'
-              : ''
-          }
-          onClick={()=>{
-            setTab('mais');
-            setSelected(null);
-          }}
-        >
-          <MoreHorizontal/>
-          <span>Mais</span>
-        </button>
-
-      </nav>
-
-      {showForm && (
-        <ActivityForm
-          initial={
-            editing.index !== null
-              ? editing.day.activities[
-                  editing.index
-                ]
-              : null
-          }
-          onClose={()=>
-            setShowForm(false)
-          }
-          onSave={(a)=>{
-
-            if(editing.index !== null){
-              updateActivity(
-                editing.date,
-                editing.index,
-                a
-              );
-            }else{
-              addActivity(
-                editing.day.date,
-                a
-              );
-            }
-
-            setShowForm(false);
+          onAdd={(activity)=>{
+            addActivity(selected.date,activity)
+            setSelected(prev=>prev ? {
+              ...prev,
+              activities:[...prev.activities,activity]
+            }:prev)
           }}
         />
       )}
@@ -500,835 +343,557 @@ function App(){
         <MoveDayModal
           day={movingDay}
           days={days}
-          onClose={() =>
-            setMovingDay(null)
-          }
+          onClose={()=>setMovingDay(null)}
           onMove={moveWholeDay}
         />
       )}
-
     </div>
-  );
+  )
 }
 
-function HomeScreen({
-  day,
-  completed,
-  onOpen
-}){
+function HomeScreen({days,onOpen}){
+  const completed=days.filter(d=>d.completed).length
+
   return (
-    <main>
-
-      <section className="hero">
-
-        <div className="heroPhoto">
-
-          <div className="heroBadge">
-            TRIPMATE · CANADÁ
-          </div>
-
-          <div className="heroOverlay">
-
-            <span>🍁</span>
-
-            <h1>
-              Canadá 2026
-            </h1>
-
-            <p>
-              Barrie + Toronto
-            </p>
-
-            <small>
-              <CalendarDays size={14}/>
-              07/09 → 21/09/2026
-            </small>
-
-          </div>
-
-          <div className="heroPin">
-            Toronto
-          </div>
-
-        </div>
-
-        <div className="nextCard">
-
-          <div className="eyebrow">
-            PRÓXIMO DIA
-          </div>
-
-          <div className="date">
-            {day.date.slice(0,5)}
-            <span>
-              • {day.dow}
-            </span>
-          </div>
-
-          <h2>
-            {day.icon} {day.title}
-          </h2>
-
-          <p>
-            {day.activities.length} atividades · roteiro offline
-          </p>
-
-          <button
-            className="primary"
-            onClick={onOpen}
-          >
-            Ver roteiro
-            <ChevronRight size={18}/>
+    <section>
+      <div className="hero">
+        <div className="hero-content">
+          <span className="eyebrow">SUA VIAGEM</span>
+          <h1>Canadá<br/>2026</h1>
+          <p>Seu roteiro completo na palma da mão.</p>
+          <button className="primary" onClick={onOpen}>
+            Abrir roteiro <ChevronRight size={18}/>
           </button>
-
         </div>
-
-        <div className="stats">
-
-          <div>
-            <strong>15</strong>
-            <span>dias</span>
-          </div>
-
-          <div>
-            <strong>14</strong>
-            <span>roteiros</span>
-          </div>
-
-          <div>
-            <strong>{completed}</strong>
-            <span>concluídos</span>
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-  );
-}
-
-function Schedule({
-  days,
-  done,
-  filter,
-  setFilter,
-  onSelect
-}){
-  const filtered =
-    days.filter(
-      d=>matchesFilter(d,filter)
-    );
-
-  return (
-    <main className="content">
-
-      <div className="pageTitle">
-
-        <div>
-
-          <div className="eyebrow">
-            CANADÁ 2026
-          </div>
-
-          <h1>
-            Roteiro da viagem
-          </h1>
-
-          <p>
-            Explore o roteiro por região ou veja tudo em ordem.
-          </p>
-
-        </div>
-
-        <div className="routeSearch">
-          <Search size={17}/>
-          <span>
-            {filtered.length}{' '}
-            {filtered.length === 1
-              ? 'dia'
-              : 'dias'}
-          </span>
-        </div>
-
       </div>
 
-      <div className="filter">
+      <div className="stats">
+        <div>
+          <strong>{days.length}</strong>
+          <span>dias</span>
+        </div>
+        <div>
+          <strong>{completed}</strong>
+          <span>concluídos</span>
+        </div>
+        <div>
+          <strong>{days.reduce((n,d)=>n+d.activities.length,0)}</strong>
+          <span>atividades</span>
+        </div>
+      </div>
 
-        {[
-          'Todos',
-          'Barrie',
-          'Toronto',
-          'Natureza'
-        ].map(f=>(
+      <div className="section-title">
+        <div>
+          <span className="eyebrow">PRÓXIMOS PASSOS</span>
+          <h2>Seu roteiro</h2>
+        </div>
+      </div>
+
+      <button className="next-card" onClick={onOpen}>
+        <CalendarDays size={22}/>
+        <div>
+          <strong>{days[0]?.title}</strong>
+          <span>{days[0]?.date}</span>
+        </div>
+        <ChevronRight/>
+      </button>
+    </section>
+  )
+}
+
+function Schedule({days,filter,setFilter,onSelect}){
+  const filters=['Todos','Barrie','Toronto','Natureza']
+
+  const visible=useMemo(
+    ()=>days.filter(d=>matchesFilter(d,filter)),
+    [days,filter]
+  )
+
+  return (
+    <section>
+      <div className="page-title">
+        <span className="eyebrow">ROTEIRO</span>
+        <h1>Itinerário</h1>
+        <p>Organize e acompanhe cada dia da viagem.</p>
+      </div>
+
+      <div className="filters">
+        {filters.map(f=>(
           <button
-            type="button"
             key={f}
-            className={
-              `pill ${
-                filter === f
-                  ? 'active'
-                  : ''
-              }`
-            }
-            onClick={()=>
-              setFilter(f)
-            }
+            className={filter===f?'active':''}
+            onClick={()=>setFilter(f)}
           >
             {f}
           </button>
         ))}
-
       </div>
 
-      <div className="filterHint">
-        {filter === 'Todos'
-          ? 'Todos os dias da viagem'
-          : `Mostrando apenas: ${filter}`}
-      </div>
-
-      <div className="dayList">
-
-        {filtered.map(d=>(
-
+      <div className="day-list">
+        {visible.map(day=>(
           <button
-            className={
-              `dayRow ${
-                done[d.date]
-                  ? 'isDone'
-                  : ''
-              }`
-            }
-            key={d.date}
-            onClick={()=>
-              onSelect(d)
-            }
+            className="day-card"
+            key={day.date}
+            onClick={()=>onSelect(day)}
           >
-
-            <div className="dateBox">
-              <b>
-                {d.date.slice(0,2)}
-              </b>
-              <small>
-                {d.date.slice(3,5)}
-              </small>
+            <div className="day-date">
+              <strong>{day.date.slice(0,5)}</strong>
+              <span>{day.date.slice(6)}</span>
             </div>
 
-            <div className="dayIcon">
-              {d.icon}
-            </div>
-
-            <div className="dayText">
-
-              <small>
-                {d.dow}
-              </small>
-
-              <strong>
-                {d.title}
-              </strong>
-
+            <div className="day-info">
+              <strong>{day.title}</strong>
               <span>
-                {d.city}
+                <MapPin size={13}/>
+                {day.city}
               </span>
-
+              <small>{day.activities.length} atividades</small>
             </div>
 
-            <ChevronRight size={19}/>
-
+            {day.completed
+              ? <CheckCircle2 className="completed-icon"/>
+              : <ChevronRight/>
+            }
           </button>
-
         ))}
-
       </div>
-
-      {filtered.length === 0 && (
-        <div className="emptyState">
-          Nenhum dia encontrado nesta categoria.
-        </div>
-      )}
-
-    </main>
-  );
+    </section>
+  )
 }
 
 function DayDetail({
   day,
-  done,
-  onBack,
-  onDone,
-  onMove,
-  onAdd,
-  onEdit,
-  onDelete
-}){
-  return (
-    <main className="detail">
-
-      <button
-        className="back"
-        onClick={onBack}
-      >
-        <ArrowLeft size={19}/>
-        Roteiro
-      </button>
-
-      <div className="detailHead">
-
-        <div className="eyebrow">
-          {day.date} · {day.dow}
-        </div>
-
-        <h1>
-          {day.icon} {day.title}
-        </h1>
-
-        <p>
-          {day.notes}
-        </p>
-
-      </div>
-
-      <div className="timeline">
-
-        {day.activities.map((a,i)=>(
-
-          <div
-            className="activity"
-            key={i}
-          >
-
-            <div className="time">
-
-              <b>
-                {a.time}
-              </b>
-
-              <span></span>
-
-            </div>
-
-            <div className="activityCard">
-
-              <div className="cardTop">
-
-                <h3>
-                  {a.title}
-                </h3>
-
-                <button
-                  className="miniEdit"
-                  onClick={()=>
-                    onEdit(i)
-                  }
-                >
-                  <Pencil size={15}/>
-                </button>
-
-              </div>
-
-              <p>
-                <MapPin size={14}/>
-                {a.place}
-              </p>
-
-              <p>
-                <Clock3 size={14}/>
-                {a.duration}
-              </p>
-
-              <div className="actions">
-
-                <a
-                  href={mapsUrl(a.place)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Navigation size={15}/>
-                  Maps
-                </a>
-
-                <button
-                  onClick={()=>
-                    onDelete(i)
-                  }
-                >
-                  <Trash2 size={15}/>
-                  Excluir
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        ))}
-
-      </div>
-
-      <div className="detailActions">
-
-        <button
-          className="secondary"
-          onClick={onMove}
-        >
-          <Move size={18}/>
-          Mover dia
-        </button>
-
-        <button
-          className="primary"
-          onClick={onAdd}
-        >
-          <Plus size={18}/>
-          Adicionar
-        </button>
-
-      </div>
-
-      <div className="detailActions">
-
-        <button
-          className={`primary ${
-            done ? 'done' : ''
-          }`}
-          onClick={onDone}
-        >
-          <Check size={18}/>
-          {done
-            ? 'Dia concluído'
-            : 'Marcar como concluído'}
-        </button>
-
-      </div>
-
-    </main>
-  );
-}
-
-function MoveDayModal({
-  day,
-  days,
   onClose,
-  onMove
+  onMove,
+  onToggleComplete,
+  onDelete,
+  onAdd
 }){
-
-  const availableDates =
-    days.filter(
-      d=>d.date !== day.date
-    );
-
-  const [newDate,setNewDate] =
-    useState(
-      availableDates[0]?.date || ''
-    );
+  const [showAdd,setShowAdd]=useState(false)
 
   return (
-    <div className="modal">
-
-      <div className="sheet">
-
-        <div className="sheetHead">
-
-          <h2>
-            Mover dia
-          </h2>
-
-          <button
-            className="iconBtn"
-            onClick={onClose}
-          >
+    <div className="modal-backdrop">
+      <div className="modal day-modal">
+        <div className="modal-header">
+          <div>
+            <span className="eyebrow">{day.date}</span>
+            <h2>{day.title}</h2>
+            <p>{day.city}</p>
+          </div>
+          <button className="icon-button" onClick={onClose}>
             <X/>
           </button>
-
         </div>
 
-        <p
-          style={{
-            color:'#718097',
-            fontSize:'13px',
-            lineHeight:'1.45'
-          }}
-        >
-          Você está movendo:
-          <br/>
-          <strong>
-            {day.date.slice(0,5)} · {day.title}
-          </strong>
-        </p>
+        <div className="activity-list">
+          {day.activities.length===0 && (
+            <div className="empty-state">
+              <CalendarDays size={28}/>
+              <strong>Dia livre</strong>
+              <span>Nenhuma atividade programada.</span>
+            </div>
+          )}
 
-        <label>
-          Nova data
+          {day.activities.map((a,index)=>(
+            <div className="activity-card" key={`${a.title}-${index}`}>
+              <div className="activity-time">
+                <Clock3 size={15}/>
+                {a.time}
+              </div>
 
-          <select
-            value={newDate}
-            onChange={e=>
-              setNewDate(e.target.value)
-            }
-            style={{
-              display:'block',
-              width:'100%',
-              marginTop:'6px',
-              border:'1px solid #dbe2ec',
-              borderRadius:'11px',
-              padding:'11px',
-              font:'inherit',
-              fontSize:'13px',
-              background:'#fff'
-            }}
-          >
+              <div className="activity-main">
+                <strong>{a.title}</strong>
 
-            {availableDates.map(d=>(
-              <option
-                key={d.date}
-                value={d.date}
+                <span>
+                  <MapPin size={13}/>
+                  {a.place}
+                </span>
+
+                {a.info && <p>{a.info}</p>}
+
+                <div className="activity-meta">
+                  <span>{a.duration}</span>
+                  <span>{a.type}</span>
+                  <span>{a.priority}</span>
+                </div>
+              </div>
+
+              <button
+                className="delete-button"
+                onClick={()=>onDelete(index)}
+                title="Excluir atividade"
               >
-                {d.date.slice(0,5)} · {d.dow}
-              </option>
-            ))}
+                <Trash2 size={16}/>
+              </button>
+            </div>
+          ))}
+        </div>
 
-          </select>
+        <div className="detail-actions">
+          <button className="secondary" onClick={onMove}>
+            <Move size={17}/>
+            Mover dia
+          </button>
 
-        </label>
+          <button className="secondary" onClick={()=>setShowAdd(true)}>
+            <Plus size={17}/>
+            Adicionar
+          </button>
+        </div>
 
         <button
-          className="primary full"
-          disabled={!newDate}
-          onClick={()=>
-            onMove(newDate)
-          }
+          className={`complete-button ${day.completed?'done':''}`}
+          onClick={onToggleComplete}
         >
-          Mover dia
+          <CheckCircle2 size={18}/>
+          {day.completed ? 'Dia concluído' : 'Marcar dia como concluído'}
         </button>
 
+        {showAdd && (
+          <AddActivityModal
+            onClose={()=>setShowAdd(false)}
+            onAdd={activity=>{
+              onAdd(activity)
+              setShowAdd(false)
+            }}
+          />
+        )}
       </div>
-
     </div>
-  );
+  )
+}
+
+function AddActivityModal({onClose,onAdd}){
+  const [form,setForm]=useState({
+    time:'10:00',
+    title:'',
+    place:'',
+    duration:'2h',
+    type:'Passeio',
+    priority:'Média',
+    info:''
+  })
+
+  function change(key,value){
+    setForm(prev=>({...prev,[key]:value}))
+  }
+
+  function submit(e){
+    e.preventDefault()
+
+    if(!form.title.trim()) return
+
+    onAdd(form)
+  }
+
+  return (
+    <div className="modal-backdrop nested">
+      <div className="modal small-modal">
+        <div className="modal-header">
+          <div>
+            <span className="eyebrow">NOVA ATIVIDADE</span>
+            <h2>Adicionar</h2>
+          </div>
+
+          <button className="icon-button" onClick={onClose}>
+            <X/>
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="form">
+          <label>
+            Nome
+            <input
+              value={form.title}
+              onChange={e=>change('title',e.target.value)}
+              placeholder="Ex.: CN Tower"
+            />
+          </label>
+
+          <label>
+            Local
+            <input
+              value={form.place}
+              onChange={e=>change('place',e.target.value)}
+              placeholder="Ex.: Toronto"
+            />
+          </label>
+
+          <div className="form-row">
+            <label>
+              Horário
+              <input
+                type="time"
+                value={form.time}
+                onChange={e=>change('time',e.target.value)}
+              />
+            </label>
+
+            <label>
+              Duração
+              <input
+                value={form.duration}
+                onChange={e=>change('duration',e.target.value)}
+              />
+            </label>
+          </div>
+
+          <label>
+            Tipo
+            <select
+              value={form.type}
+              onChange={e=>change('type',e.target.value)}
+            >
+              <option>Passeio</option>
+              <option>Natureza</option>
+              <option>Viagem</option>
+              <option>Esporte</option>
+              <option>Compras</option>
+              <option>Livre</option>
+            </select>
+          </label>
+
+          <label>
+            Prioridade
+            <select
+              value={form.priority}
+              onChange={e=>change('priority',e.target.value)}
+            >
+              <option>Alta</option>
+              <option>Média</option>
+              <option>Baixa</option>
+            </select>
+          </label>
+
+          <label>
+            Observação
+            <textarea
+              value={form.info}
+              onChange={e=>change('info',e.target.value)}
+              placeholder="Informações adicionais"
+            />
+          </label>
+
+          <button className="primary full" type="submit">
+            Adicionar atividade
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function MoveDayModal({day,days,onClose,onMove}){
+  const [newDate,setNewDate]=useState('')
+
+  const dateOptions=days
+    .map(d=>d.date)
+    .filter(d=>d!==day.date)
+
+  // Garante também as datas que ainda não possuem roteiro.
+  const allDates=[]
+  const start=new Date(2026,8,7)
+  const end=new Date(2026,8,21)
+
+  for(
+    let current=new Date(start);
+    current<=end;
+    current.setDate(current.getDate()+1)
+  ){
+    const date=`${String(current.getDate()).padStart(2,'0')}/${String(current.getMonth()+1).padStart(2,'0')}/${current.getFullYear()}`
+    if(date!==day.date) allDates.push(date)
+  }
+
+  const destinationExists=days.some(d=>d.date===newDate)
+
+  function submit(){
+    if(!newDate) return
+
+    if(destinationExists){
+      onClose()
+      setTimeout(()=>{
+        const confirmed=window.confirm(
+          `A data ${newDate.slice(0,5)} já possui um roteiro.\n\n`+
+          `OK = Trocar os dias\n`+
+          `Cancelar = Mesclar os roteiros`
+        )
+
+        if(confirmed){
+          onMove(day.date,newDate,'swap')
+        }else{
+          const mergeConfirm=window.confirm(
+            `Mesclar o roteiro de ${day.date.slice(0,5)} com ${newDate.slice(0,5)}?\n\n`+
+            `As atividades dos dois dias serão preservadas. `+
+            `A data de origem ficará como "Dia livre / ajustes".`
+          )
+
+          if(mergeConfirm){
+            onMove(day.date,newDate,'merge')
+          }
+        }
+      },50)
+
+      return
+    }
+
+    onMove(day.date,newDate,'move')
+  }
+
+  return (
+    <div className="modal-backdrop nested">
+      <div className="modal small-modal">
+        <div className="modal-header">
+          <div>
+            <span className="eyebrow">MOVER DIA</span>
+            <h2>{day.title}</h2>
+            <p>Atual: {day.date}</p>
+          </div>
+
+          <button className="icon-button" onClick={onClose}>
+            <X/>
+          </button>
+        </div>
+
+        <div className="move-icon">
+          <Move size={28}/>
+        </div>
+
+        <label className="move-label">
+          Nova data
+          <select
+            value={newDate}
+            onChange={e=>setNewDate(e.target.value)}
+          >
+            <option value="">Selecione uma data</option>
+
+            {allDates.map(date=>{
+              const exists=dateOptions.includes(date)
+
+              return (
+                <option key={date} value={date}>
+                  {date.slice(0,5)}
+                  {exists ? ' — já possui roteiro' : ' — livre'}
+                </option>
+              )
+            })}
+          </select>
+        </label>
+
+        {destinationExists && newDate && (
+          <div className="conflict-box">
+            <strong>⚠️ Essa data já possui atividades.</strong>
+            <p>
+              Você poderá trocar os dias ou mesclar os roteiros.
+              Nenhuma atividade será apagada automaticamente.
+            </p>
+          </div>
+        )}
+
+        <div className="move-actions">
+          <button className="secondary" onClick={onClose}>
+            Cancelar
+          </button>
+
+          <button
+            className="primary"
+            disabled={!newDate}
+            onClick={submit}
+          >
+            <Move size={17}/>
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function MapScreen({days}){
+  const places=days.flatMap(d=>
+    d.activities.map(a=>({
+      ...a,
+      date:d.date
+    }))
+  )
+
+  function openMaps(place){
+    const url=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`
+    window.open(url,'_blank')
+  }
 
   return (
-    <main className="content">
-
-      <div className="pageTitle">
-
-        <div className="eyebrow">
-          MAPA
-        </div>
-
-        <h1>
-          Locais do roteiro
-        </h1>
-
-        <p>
-          Abra cada ponto diretamente no Google Maps.
-        </p>
-
+    <section>
+      <div className="page-title">
+        <span className="eyebrow">MAPA</span>
+        <h1>Locais</h1>
+        <p>Acesse rapidamente os locais do seu roteiro.</p>
       </div>
 
-      <div className="mapCard">
-
-        <div className="fakeMap">
-
-          <span>📍 Barrie</span>
-          <span>📍 Toronto</span>
-          <span>📍 Blue Mountain</span>
-          <span>📍 Niagara Falls</span>
-
-          <div className="routeLine"></div>
-
-        </div>
-
-      </div>
-
-      <div className="placeList">
-
-        {days
-          .flatMap(
-            d=>d.activities.map(
-              a=>a.place
-            )
-          )
-          .filter(
-            (x,i,a)=>
-              x &&
-              a.indexOf(x) === i
-          )
-          .slice(0,18)
-          .map(p=>(
-
-            <a
-              key={p}
-              href={mapsUrl(p)}
-              target="_blank"
-              rel="noreferrer"
-            >
-
-              <MapPin size={17}/>
-
-              <span>
-                {p}
-              </span>
-
-              <ExternalLink size={15}/>
-
-            </a>
-
-          ))}
-
-      </div>
-
-    </main>
-  );
-}
-
-function ActivityForm({
-  initial,
-  onClose,
-  onSave
-}){
-
-  const [a,setA] =
-    useState(
-      initial || {
-        time:'09:00',
-        title:'',
-        place:'',
-        duration:'1h',
-        desc:''
-      }
-    );
-
-  return (
-    <div className="modal">
-
-      <div className="sheet">
-
-        <div className="sheetHead">
-
-          <h2>
-            {initial
-              ? 'Editar atividade'
-              : 'Nova atividade'}
-          </h2>
-
+      <div className="place-list">
+        {places.map((p,index)=>(
           <button
-            className="iconBtn"
-            onClick={onClose}
+            className="place-card"
+            key={`${p.place}-${index}`}
+            onClick={()=>openMaps(p.place)}
           >
-            <X/>
+            <MapPin size={20}/>
+            <div>
+              <strong>{p.place}</strong>
+              <span>{p.date.slice(0,5)} · {p.title}</span>
+            </div>
+            <ChevronRight/>
           </button>
-
-        </div>
-
-        <label>
-          Horário
-
-          <input
-            value={a.time}
-            onChange={e=>
-              setA({
-                ...a,
-                time:e.target.value
-              })
-            }
-          />
-
-        </label>
-
-        <label>
-          Nome
-
-          <input
-            autoFocus
-            value={a.title}
-            onChange={e=>
-              setA({
-                ...a,
-                title:e.target.value
-              })
-            }
-          />
-
-        </label>
-
-        <label>
-          Local
-
-          <input
-            value={a.place}
-            onChange={e=>
-              setA({
-                ...a,
-                place:e.target.value
-              })
-            }
-          />
-
-        </label>
-
-        <label>
-          Duração
-
-          <input
-            value={a.duration}
-            onChange={e=>
-              setA({
-                ...a,
-                duration:e.target.value
-              })
-            }
-          />
-
-        </label>
-
-        <label>
-          Descrição
-
-          <textarea
-            rows="3"
-            value={a.desc}
-            onChange={e=>
-              setA({
-                ...a,
-                desc:e.target.value
-              })
-            }
-          />
-
-        </label>
-
-        <button
-          className="primary full"
-          disabled={!a.title.trim()}
-          onClick={()=>
-            onSave(a)
-          }
-        >
-          Salvar atividade
-        </button>
-
+        ))}
       </div>
-
-    </div>
-  );
+    </section>
+  )
 }
 
-function MoreScreen({
-  completed,
-  days
-}){
+function MoreScreen(){
+  return (
+    <section>
+      <div className="page-title">
+        <span className="eyebrow">TRIPMATE</span>
+        <h1>Mais</h1>
+        <p>Configurações e informações do aplicativo.</p>
+      </div>
+
+      <div className="more-card">
+        <Route size={24}/>
+        <div>
+          <strong>TripMate</strong>
+          <p>
+            Seu roteiro é salvo no próprio aparelho e pode continuar
+            funcionando offline.
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BottomNav({view,setView}){
+  const items=[
+    ['inicio','Início',Home],
+    ['roteiro','Roteiro',CalendarDays],
+    ['mapa','Mapa',Map],
+    ['mais','Mais',Menu]
+  ]
 
   return (
-    <main className="content more">
-
-      <div className="pageTitle">
-
-        <div>
-
-          <div className="eyebrow">
-            TRIPMATE
-          </div>
-
-          <h1>
-            Mais
-          </h1>
-
-          <p>
-            Informações rápidas sobre seu roteiro.
-          </p>
-
-        </div>
-
-      </div>
-
-      <div className="moreHero">
-
-        <div className="moreIcon">
-          🍁
-        </div>
-
-        <div>
-
-          <strong>
-            Canadá 2026
-          </strong>
-
-          <span>
-            Barrie + Toronto · 15 dias
-          </span>
-
-        </div>
-
-      </div>
-
-      <div className="infoList">
-
-        <div>
-
-          <Info size={18}/>
-
-          <span>
-
-            <b>
-              Roteiro offline
-            </b>
-
-            <small>
-              Suas alterações ficam salvas neste aparelho.
-            </small>
-
-          </span>
-
-        </div>
-
-        <div>
-
-          <Check size={18}/>
-
-          <span>
-
-            <b>
-              {completed} dias concluídos
-            </b>
-
-            <small>
-              Marque cada dia conforme avançar na viagem.
-            </small>
-
-          </span>
-
-        </div>
-
-        <div>
-
-          <CalendarDays size={18}/>
-
-          <span>
-
-            <b>
-              {days.length} dias planejados
-            </b>
-
-            <small>
-              De 07/09 a 21/09/2026.
-            </small>
-
-          </span>
-
-        </div>
-
-      </div>
-
-    </main>
-  );
+    <nav className="bottom-nav">
+      {items.map(([id,label,Icon])=>(
+        <button
+          key={id}
+          className={view===id?'active':''}
+          onClick={()=>setView(id)}
+        >
+          <Icon size={21}/>
+          <span>{label}</span>
+        </button>
+      ))}
+    </nav>
+  )
 }
 
-createRoot(
-  document.getElementById('root')
-).render(
-  <App/>
-);
+createRoot(document.getElementById('root')).render(<App/>)
