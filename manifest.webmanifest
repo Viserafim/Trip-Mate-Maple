@@ -1,8 +1,9 @@
 {
   "name": "TripMate",
   "short_name": "TripMate",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/Trip-Mate-Maple/",
+  "start_url": "/Trip-Mate-Maple/?view=roteiro",
+  "scope": "/Trip-Mate-Maple/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f5f7fb",
