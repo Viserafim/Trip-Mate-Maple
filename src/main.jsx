@@ -18,644 +18,27 @@ import {
   X,
   MoreHorizontal,
   Search,
-  Info
+  Info,
+  Move
 } from 'lucide-react';
 import './styles.css';
 
 const initialDays = [
-  {
-    date:'07/09/2026',
-    dow:'Segunda-feira',
-    title:'Chegada em Barrie',
-    city:'Barrie',
-    icon:'✈️',
-    notes:'Chegada à noite, acomodação e descanso.',
-    activities:[
-      {
-        time:'20:30',
-        title:'Chegada à casa / acomodação',
-        place:'Barrie',
-        duration:'1h',
-        desc:'Noite tranquila após a viagem.'
-      }
-    ]
-  },
-
-  {
-    date:'08/09/2026',
-    dow:'Terça-feira',
-    title:'Barrie: Downtown + Waterfront + Lake Simcoe',
-    city:'Barrie',
-    icon:'🌳',
-    notes:'Dia leve para começar a viagem.',
-    activities:[
-      {
-        time:'09:15',
-        title:'Downtown Barrie',
-        place:'Downtown Barrie',
-        duration:'1h',
-        desc:'Explorar a região, lojas e cafés.'
-      },
-      {
-        time:'10:15',
-        title:'Waterfront / Heritage Park',
-        place:'Barrie Waterfront',
-        duration:'1h30',
-        desc:'Caminhada e fotos.'
-      },
-      {
-        time:'11:45',
-        title:'Passeio pela orla / Lake Simcoe',
-        place:'Lake Simcoe',
-        duration:'45 min',
-        desc:'Passeio pela orla.'
-      },
-      {
-        time:'12:30',
-        title:'Almoço',
-        place:'Downtown Barrie / Waterfront',
-        duration:'1h30',
-        desc:'Almoço na região.'
-      },
-      {
-        time:'14:00',
-        title:'Lojas / centro',
-        place:'Downtown Barrie',
-        duration:'1h30',
-        desc:'Compras e passeio pelo centro.'
-      },
-      {
-        time:'15:30',
-        title:'Lake Simcoe / retorno pela orla',
-        place:'Barrie',
-        duration:'1h30',
-        desc:'Finalizar o dia com passeio pela orla.'
-      }
-    ]
-  },
-
-  {
-    date:'09/09/2026',
-    dow:'Quarta-feira',
-    title:"Toronto: CN Tower + Ripley's + Waterfront",
-    city:'Toronto',
-    icon:'🗼',
-    notes:'Começar cedo para aproveitar as atrações.',
-    activities:[
-      {
-        time:'07:15',
-        title:'Saída de Barrie',
-        place:'Barrie → Toronto',
-        duration:'~2h',
-        desc:'Deslocamento de carro.'
-      },
-      {
-        time:'09:15',
-        title:'CN Tower',
-        place:'Downtown Toronto',
-        duration:'1h30',
-        desc:'Mirante e principais áreas da atração.'
-      },
-      {
-        time:'10:50',
-        title:"Ripley's Aquarium",
-        place:'Downtown Toronto',
-        duration:'1h40',
-        desc:'Visita ao aquário.'
-      },
-      {
-        time:'12:45',
-        title:'Almoço',
-        place:'Harbourfront / Downtown',
-        duration:'1h15',
-        desc:'Almoço na região.'
-      },
-      {
-        time:'14:00',
-        title:'Waterfront / Harbourfront',
-        place:'Toronto Waterfront',
-        duration:'1h30',
-        desc:'Caminhada e fotos.'
-      },
-      {
-        time:'15:30',
-        title:'Downtown',
-        place:'Downtown Toronto',
-        duration:'1h30',
-        desc:'Passeio pelo centro.'
-      },
-      {
-        time:'17:00',
-        title:'Café / lanche',
-        place:'Downtown',
-        duration:'1h',
-        desc:'Pausa antes do retorno.'
-      }
-    ]
-  },
-
-  {
-    date:'10/09/2026',
-    dow:'Quinta-feira',
-    title:'Barrie: dia livre / descanso / compras',
-    city:'Barrie',
-    icon:'🛍️',
-    notes:'Dia de recuperação e flexibilidade.',
-    activities:[
-      {
-        time:'09:30',
-        title:'Manhã livre',
-        place:'Barrie',
-        duration:'2h',
-        desc:'Descanso ou atividade espontânea.'
-      },
-      {
-        time:'11:30',
-        title:'Compras / centro',
-        place:'Barrie',
-        duration:'2h',
-        desc:'Compras e passeio.'
-      },
-      {
-        time:'14:00',
-        title:'Tarde livre',
-        place:'Barrie',
-        duration:'3h',
-        desc:'Descanso ou ajustes do roteiro.'
-      }
-    ]
-  },
-
-  {
-    date:'11/09/2026',
-    dow:'Sexta-feira',
-    title:'Niagara Falls + Niagara-on-the-Lake',
-    city:'Niagara Falls',
-    icon:'💦',
-    notes:"Roteiro principal do dia. Opção alternativa: Canada's Wonderland.",
-    activities:[
-      {
-        time:'06:30',
-        title:'Saída de Barrie',
-        place:'Barrie → Niagara Falls',
-        duration:'~2h',
-        desc:'Deslocamento de carro.'
-      },
-      {
-        time:'09:00',
-        title:'Niagara Falls',
-        place:'Table Rock / Fallsview',
-        duration:'2h',
-        desc:'Cataratas, mirantes e fotos.'
-      },
-      {
-        time:'12:00',
-        title:'Almoço',
-        place:'Table Rock / Fallsview',
-        duration:'1h15',
-        desc:'Almoço próximo às cataratas.'
-      },
-      {
-        time:'13:15',
-        title:'Niagara-on-the-Lake',
-        place:'Niagara-on-the-Lake',
-        duration:'2h',
-        desc:'Centro histórico e passeio.'
-      },
-      {
-        time:'16:00',
-        title:'Retorno a Barrie',
-        place:'Niagara → Barrie',
-        duration:'~2h',
-        desc:'Retorno.'
-      }
-    ]
-  },
-
-  {
-    date:'12/09/2026',
-    dow:'Sábado',
-    title:'Toronto Islands + Harbourfront + Distillery District',
-    city:'Toronto',
-    icon:'🏝️',
-    notes:'Chegar cedo ao ferry.',
-    activities:[
-      {
-        time:'07:00',
-        title:'Saída de Barrie',
-        place:'Barrie → Toronto',
-        duration:'~2h',
-        desc:'Deslocamento.'
-      },
-      {
-        time:'09:30',
-        title:'Toronto Islands',
-        place:'Toronto Islands',
-        duration:'3h',
-        desc:'Ferry, ilhas, caminhada e vistas do skyline.'
-      },
-      {
-        time:'12:30',
-        title:'Almoço',
-        place:'Toronto Islands',
-        duration:'1h',
-        desc:'Almoço na região.'
-      },
-      {
-        time:'13:30',
-        title:'Harbourfront',
-        place:'Harbourfront',
-        duration:'2h',
-        desc:'Passeio pela orla.'
-      },
-      {
-        time:'15:30',
-        title:'Distillery District',
-        place:'Distillery District',
-        duration:'2h',
-        desc:'Arquitetura, lojas e cafés.'
-      }
-    ]
-  },
-
-  {
-    date:'13/09/2026',
-    dow:'Domingo',
-    title:"Canada's Wonderland",
-    city:'Vaughan',
-    icon:'🎢',
-    notes:'Dia inteiro no parque.',
-    activities:[
-      {
-        time:'08:00',
-        title:'Saída de Barrie',
-        place:'Barrie → Vaughan',
-        duration:'~1h',
-        desc:'Deslocamento.'
-      },
-      {
-        time:'09:15',
-        title:"Canada's Wonderland",
-        place:'Vaughan',
-        duration:'dia inteiro',
-        desc:'Parque, atrações e áreas temáticas.'
-      },
-      {
-        time:'13:00',
-        title:'Almoço',
-        place:'Dentro do parque',
-        duration:'1h',
-        desc:'Almoço no parque.'
-      }
-    ]
-  },
-
-  {
-    date:'14/09/2026',
-    dow:'Segunda-feira',
-    title:'Dia coringa / ajustes conforme clima',
-    city:'Livre',
-    icon:'☀️',
-    notes:'Reservar para clima, descanso ou repetir uma atração.',
-    activities:[
-      {
-        time:'09:00',
-        title:'Manhã livre',
-        place:'Barrie',
-        duration:'2h',
-        desc:'Descanso.'
-      },
-      {
-        time:'11:00',
-        title:'Compras / Barrie',
-        place:'Barrie',
-        duration:'2h',
-        desc:'Compras ou passeio.'
-      },
-      {
-        time:'14:30',
-        title:'Atividade conforme clima',
-        place:'A definir',
-        duration:'2h30',
-        desc:'Usar este espaço para ajustes.'
-      }
-    ]
-  },
-
-  {
-    date:'15/09/2026',
-    dow:'Terça-feira',
-    title:'ROM + Yorkville + Blue Jays às 19h07',
-    city:'Toronto',
-    icon:'⚾',
-    notes:'O jogo é o compromisso principal.',
-    activities:[
-      {
-        time:'07:30',
-        title:'Saída de Barrie',
-        place:'Barrie → Toronto',
-        duration:'~2h',
-        desc:'Deslocamento.'
-      },
-      {
-        time:'09:30',
-        title:'Royal Ontario Museum',
-        place:'Toronto',
-        duration:'2h30',
-        desc:'Visita ao ROM.'
-      },
-      {
-        time:'12:00',
-        title:'Almoço',
-        place:'Yorkville / Bloor',
-        duration:'1h15',
-        desc:'Almoço na região.'
-      },
-      {
-        time:'13:15',
-        title:'Yorkville',
-        place:'Yorkville',
-        duration:'1h45',
-        desc:'Passeio pela região.'
-      },
-      {
-        time:'15:00',
-        title:'Café / descanso',
-        place:'Yorkville',
-        duration:'1h',
-        desc:'Pausa.'
-      },
-      {
-        time:'16:00',
-        title:'Deslocamento para estádio',
-        place:'Yorkville → Rogers Centre',
-        duration:'30 min',
-        desc:'Ir com antecedência.'
-      },
-      {
-        time:'16:30',
-        title:'Jantar / lanche',
-        place:'Rogers Centre',
-        duration:'1h',
-        desc:'Alimentação antes do jogo.'
-      },
-      {
-        time:'19:07',
-        title:'Blue Jays',
-        place:'Rogers Centre',
-        duration:'~3h',
-        desc:'Jogo às 19h07.'
-      }
-    ]
-  },
-
-  {
-    date:'16/09/2026',
-    dow:'Quarta-feira',
-    title:'Barrie: dia livre / descanso',
-    city:'Barrie',
-    icon:'☕',
-    notes:'Dia de recuperação.',
-    activities:[
-      {
-        time:'09:30',
-        title:'Manhã livre',
-        place:'Barrie',
-        duration:'3h',
-        desc:'Descanso.'
-      },
-      {
-        time:'13:00',
-        title:'Almoço',
-        place:'Barrie',
-        duration:'1h30',
-        desc:'Almoço.'
-      },
-      {
-        time:'14:30',
-        title:'Tarde livre',
-        place:'Barrie',
-        duration:'3h',
-        desc:'Descanso ou passeio.'
-      }
-    ]
-  },
-
-  {
-    date:'17/09/2026',
-    dow:'Quinta-feira',
-    title:'Casa Loma + Spadina + Toronto complementar',
-    city:'Toronto',
-    icon:'🏰',
-    notes:'Dia cultural.',
-    activities:[
-      {
-        time:'07:30',
-        title:'Saída de Barrie',
-        place:'Barrie → Toronto',
-        duration:'~2h',
-        desc:'Deslocamento.'
-      },
-      {
-        time:'09:30',
-        title:'Casa Loma',
-        place:'Toronto',
-        duration:'2h',
-        desc:'Visita ao castelo.'
-      },
-      {
-        time:'12:00',
-        title:'Almoço',
-        place:'Spadina / Bloor / Kensington',
-        duration:'1h',
-        desc:'Almoço na região.'
-      },
-      {
-        time:'13:00',
-        title:'Spadina',
-        place:'Spadina',
-        duration:'1h30',
-        desc:'Passeio pela região.'
-      },
-      {
-        time:'14:30',
-        title:'Toronto complementar',
-        place:'Toronto',
-        duration:'2h30',
-        desc:'Escolher pontos próximos conforme disposição.'
-      }
-    ]
-  },
-
-  {
-    date:'18/09/2026',
-    dow:'Sexta-feira',
-    title:'Blue Mountain + Collingwood + Wasaga Beach',
-    city:'Blue Mountain',
-    icon:'🏔️',
-    notes:'Dia de natureza.',
-    activities:[
-      {
-        time:'08:00',
-        title:'Saída de Barrie',
-        place:'Barrie → Blue Mountain',
-        duration:'~1h15',
-        desc:'Deslocamento.'
-      },
-      {
-        time:'09:15',
-        title:'Blue Mountain Village',
-        place:'Blue Mountain',
-        duration:'2h15',
-        desc:'Passeio pelo Village.'
-      },
-      {
-        time:'11:30',
-        title:'Atividades da montanha',
-        place:'Blue Mountain',
-        duration:'1h30',
-        desc:'Atividades e mirantes.'
-      },
-      {
-        time:'13:00',
-        title:'Almoço',
-        place:'Blue Mountain Village',
-        duration:'1h',
-        desc:'Almoço.'
-      },
-      {
-        time:'14:00',
-        title:'Atividades / caminhada',
-        place:'Blue Mountain',
-        duration:'1h30',
-        desc:'Caminhada.'
-      },
-      {
-        time:'15:30',
-        title:'Passeio',
-        place:'Collingwood',
-        duration:'1h',
-        desc:'Centro de Collingwood.'
-      },
-      {
-        time:'16:30',
-        title:'Wasaga Beach',
-        place:'Wasaga Beach',
-        duration:'1h',
-        desc:'Parada na praia.'
-      }
-    ]
-  },
-
-  {
-    date:'19/09/2026',
-    dow:'Sábado',
-    title:'Niagara Falls + Cruise + Journey Behind the Falls',
-    city:'Niagara Falls',
-    icon:'🚢',
-    notes:'Dia longo.',
-    activities:[
-      {
-        time:'06:30',
-        title:'Saída de Barrie',
-        place:'Barrie → Niagara Falls',
-        duration:'~2h',
-        desc:'Deslocamento.'
-      },
-      {
-        time:'09:00',
-        title:'Niagara Falls',
-        place:'Niagara Falls',
-        duration:'1h30',
-        desc:'Mirantes.'
-      },
-      {
-        time:'10:30',
-        title:'Cruise',
-        place:'Niagara Falls',
-        duration:'1h',
-        desc:'Cruzeiro pelas cataratas.'
-      },
-      {
-        time:'12:00',
-        title:'Almoço',
-        place:'Fallsview / Table Rock',
-        duration:'1h15',
-        desc:'Almoço.'
-      },
-      {
-        time:'13:15',
-        title:'Journey Behind the Falls',
-        place:'Niagara Falls',
-        duration:'1h30',
-        desc:'Experiência atrás das cataratas.'
-      },
-      {
-        time:'15:00',
-        title:'Passeio livre',
-        place:'Niagara Falls',
-        duration:'1h30',
-        desc:'Fotos e pontos próximos.'
-      },
-      {
-        time:'17:00',
-        title:'Retorno a Barrie',
-        place:'Niagara → Barrie',
-        duration:'~2h',
-        desc:'Retorno.'
-      }
-    ]
-  },
-
-  {
-    date:'20/09/2026',
-    dow:'Domingo',
-    title:'Barrie: dia livre / compras',
-    city:'Barrie',
-    icon:'🧳',
-    notes:'Último dia. Organizar malas.',
-    activities:[
-      {
-        time:'09:30',
-        title:'Dia livre',
-        place:'Barrie',
-        duration:'3h',
-        desc:'Passeio leve.'
-      },
-      {
-        time:'13:00',
-        title:'Almoço',
-        place:'Barrie',
-        duration:'1h30',
-        desc:'Almoço.'
-      },
-      {
-        time:'14:30',
-        title:'Compras / organização',
-        place:'Barrie',
-        duration:'2h30',
-        desc:'Últimas compras e malas.'
-      }
-    ]
-  },
-
-  {
-    date:'21/09/2026',
-    dow:'Segunda-feira',
-    title:'Retorno — Barrie → aeroporto',
-    city:'Retorno',
-    icon:'✈️',
-    notes:'Calcular saída conforme horário do voo.',
-    activities:[
-      {
-        time:'Manhã',
-        title:'Saída de Barrie',
-        place:'Barrie → aeroporto',
-        duration:'—',
-        desc:'Retorno ao aeroporto.'
-      }
-    ]
-  }
+  {date:'07/09/2026',dow:'Segunda-feira',title:'Chegada em Barrie',city:'Barrie',icon:'✈️',notes:'Chegada à noite, acomodação e descanso.',activities:[{time:'20:30',title:'Chegada à casa / acomodação',place:'Barrie',duration:'1h',desc:'Noite tranquila após a viagem.'}]},
+  {date:'08/09/2026',dow:'Terça-feira',title:'Barrie: Downtown + Waterfront + Lake Simcoe',city:'Barrie',icon:'🌳',notes:'Dia leve para começar a viagem.',activities:[{time:'09:15',title:'Downtown Barrie',place:'Downtown Barrie',duration:'1h',desc:'Explorar a região, lojas e cafés.'},{time:'10:15',title:'Waterfront / Heritage Park',place:'Barrie Waterfront',duration:'1h30',desc:'Caminhada e fotos.'},{time:'11:45',title:'Passeio pela orla / Lake Simcoe',place:'Lake Simcoe',duration:'45 min',desc:'Passeio pela orla.'},{time:'12:30',title:'Almoço',place:'Downtown Barrie / Waterfront',duration:'1h30',desc:'Almoço na região.'},{time:'14:00',title:'Lojas / centro',place:'Downtown Barrie',duration:'1h30',desc:'Compras e passeio pelo centro.'},{time:'15:30',title:'Lake Simcoe / retorno pela orla',place:'Barrie',duration:'1h30',desc:'Finalizar o dia com passeio pela orla.'}]},
+  {date:'09/09/2026',dow:'Quarta-feira',title:"Toronto: CN Tower + Ripley's + Waterfront",city:'Toronto',icon:'🗼',notes:'Começar cedo para aproveitar as atrações.',activities:[{time:'07:15',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento de carro.'},{time:'09:15',title:'CN Tower',place:'Downtown Toronto',duration:'1h30',desc:'Mirante e principais áreas da atração.'},{time:'10:50',title:"Ripley's Aquarium",place:'Downtown Toronto',duration:'1h40',desc:'Visita ao aquário.'},{time:'12:45',title:'Almoço',place:'Harbourfront / Downtown',duration:'1h15',desc:'Almoço na região.'},{time:'14:00',title:'Waterfront / Harbourfront',place:'Toronto Waterfront',duration:'1h30',desc:'Caminhada e fotos.'},{time:'15:30',title:'Downtown',place:'Downtown Toronto',duration:'1h30',desc:'Passeio pelo centro.'},{time:'17:00',title:'Café / lanche',place:'Downtown',duration:'1h',desc:'Pausa antes do retorno.'}]},
+  {date:'10/09/2026',dow:'Quinta-feira',title:'Barrie: dia livre / descanso / compras',city:'Barrie',icon:'🛍️',notes:'Dia de recuperação e flexibilidade.',activities:[{time:'09:30',title:'Manhã livre',place:'Barrie',duration:'2h',desc:'Descanso ou atividade espontânea.'},{time:'11:30',title:'Compras / centro',place:'Barrie',duration:'2h',desc:'Compras e passeio.'},{time:'14:00',title:'Tarde livre',place:'Barrie',duration:'3h',desc:'Descanso ou ajustes do roteiro.'}]},
+  {date:'11/09/2026',dow:'Sexta-feira',title:'Niagara Falls + Niagara-on-the-Lake',city:'Niagara Falls',icon:'💦',notes:"Roteiro principal do dia. Opção alternativa: Canada's Wonderland.",activities:[{time:'06:30',title:'Saída de Barrie',place:'Barrie → Niagara Falls',duration:'~2h',desc:'Deslocamento de carro.'},{time:'09:00',title:'Niagara Falls',place:'Table Rock / Fallsview',duration:'2h',desc:'Cataratas, mirantes e fotos.'},{time:'12:00',title:'Almoço',place:'Table Rock / Fallsview',duration:'1h15',desc:'Almoço próximo às cataratas.'},{time:'13:15',title:'Niagara-on-the-Lake',place:'Niagara-on-the-Lake',duration:'2h',desc:'Centro histórico e passeio.'},{time:'16:00',title:'Retorno a Barrie',place:'Niagara → Barrie',duration:'~2h',desc:'Retorno.'}]},
+  {date:'12/09/2026',dow:'Sábado',title:'Toronto Islands + Harbourfront + Distillery District',city:'Toronto',icon:'🏝️',notes:'Chegar cedo ao ferry.',activities:[{time:'07:00',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento.'},{time:'09:30',title:'Toronto Islands',place:'Toronto Islands',duration:'3h',desc:'Ferry, ilhas, caminhada e vistas do skyline.'},{time:'12:30',title:'Almoço',place:'Toronto Islands',duration:'1h',desc:'Almoço na região.'},{time:'13:30',title:'Harbourfront',place:'Harbourfront',duration:'2h',desc:'Passeio pela orla.'},{time:'15:30',title:'Distillery District',place:'Distillery District',duration:'2h',desc:'Arquitetura, lojas e cafés.'}]},
+  {date:'13/09/2026',dow:'Domingo',title:"Canada's Wonderland",city:'Vaughan',icon:'🎢',notes:'Dia inteiro no parque.',activities:[{time:'08:00',title:'Saída de Barrie',place:'Barrie → Vaughan',duration:'~1h',desc:'Deslocamento.'},{time:'09:15',title:"Canada's Wonderland",place:'Vaughan',duration:'dia inteiro',desc:'Parque, atrações e áreas temáticas.'},{time:'13:00',title:'Almoço',place:'Dentro do parque',duration:'1h',desc:'Almoço no parque.'}]},
+  {date:'14/09/2026',dow:'Segunda-feira',title:'Dia coringa / ajustes conforme clima',city:'Livre',icon:'☀️',notes:'Reservar para clima, descanso ou repetir uma atração.',activities:[{time:'09:00',title:'Manhã livre',place:'Barrie',duration:'2h',desc:'Descanso.'},{time:'11:00',title:'Compras / Barrie',place:'Barrie',duration:'2h',desc:'Compras ou passeio.'},{time:'14:30',title:'Atividade conforme clima',place:'A definir',duration:'2h30',desc:'Usar este espaço para ajustes.'}]},
+  {date:'15/09/2026',dow:'Terça-feira',title:'ROM + Yorkville + Blue Jays às 19h07',city:'Toronto',icon:'⚾',notes:'O jogo é o compromisso principal.',activities:[{time:'07:30',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento.'},{time:'09:30',title:'Royal Ontario Museum',place:'Toronto',duration:'2h30',desc:'Visita ao ROM.'},{time:'12:00',title:'Almoço',place:'Yorkville / Bloor',duration:'1h15',desc:'Almoço na região.'},{time:'13:15',title:'Yorkville',place:'Yorkville',duration:'1h45',desc:'Passeio pela região.'},{time:'15:00',title:'Café / descanso',place:'Yorkville',duration:'1h',desc:'Pausa.'},{time:'16:00',title:'Deslocamento para estádio',place:'Yorkville → Rogers Centre',duration:'30 min',desc:'Ir com antecedência.'},{time:'16:30',title:'Jantar / lanche',place:'Rogers Centre',duration:'1h',desc:'Alimentação antes do jogo.'},{time:'19:07',title:'Blue Jays',place:'Rogers Centre',duration:'~3h',desc:'Jogo às 19h07.'}]},
+  {date:'16/09/2026',dow:'Quarta-feira',title:'Barrie: dia livre / descanso',city:'Barrie',icon:'☕',notes:'Dia de recuperação.',activities:[{time:'09:30',title:'Manhã livre',place:'Barrie',duration:'3h',desc:'Descanso.'},{time:'13:00',title:'Almoço',place:'Barrie',duration:'1h30',desc:'Almoço.'},{time:'14:30',title:'Tarde livre',place:'Barrie',duration:'3h',desc:'Descanso ou passeio.'}]},
+  {date:'17/09/2026',dow:'Quinta-feira',title:'Casa Loma + Spadina + Toronto complementar',city:'Toronto',icon:'🏰',notes:'Dia cultural.',activities:[{time:'07:30',title:'Saída de Barrie',place:'Barrie → Toronto',duration:'~2h',desc:'Deslocamento.'},{time:'09:30',title:'Casa Loma',place:'Toronto',duration:'2h',desc:'Visita ao castelo.'},{time:'12:00',title:'Almoço',place:'Spadina / Bloor / Kensington',duration:'1h',desc:'Almoço na região.'},{time:'13:00',title:'Spadina',place:'Spadina',duration:'1h30',desc:'Passeio pela região.'},{time:'14:30',title:'Toronto complementar',place:'Toronto',duration:'2h30',desc:'Escolher pontos próximos conforme disposição.'}]},
+  {date:'18/09/2026',dow:'Sexta-feira',title:'Blue Mountain + Collingwood + Wasaga Beach',city:'Blue Mountain',icon:'🏔️',notes:'Dia de natureza.',activities:[{time:'08:00',title:'Saída de Barrie',place:'Barrie → Blue Mountain',duration:'~1h15',desc:'Deslocamento.'},{time:'09:15',title:'Blue Mountain Village',place:'Blue Mountain',duration:'2h15',desc:'Passeio pelo Village.'},{time:'11:30',title:'Atividades da montanha',place:'Blue Mountain',duration:'1h30',desc:'Atividades e mirantes.'},{time:'13:00',title:'Almoço',place:'Blue Mountain Village',duration:'1h',desc:'Almoço.'},{time:'14:00',title:'Atividades / caminhada',place:'Blue Mountain',duration:'1h30',desc:'Caminhada.'},{time:'15:30',title:'Passeio',place:'Collingwood',duration:'1h',desc:'Centro de Collingwood.'},{time:'16:30',title:'Wasaga Beach',place:'Wasaga Beach',duration:'1h',desc:'Parada na praia.'}]},
+  {date:'19/09/2026',dow:'Sábado',title:'Niagara Falls + Cruise + Journey Behind the Falls',city:'Niagara Falls',icon:'🚢',notes:'Dia longo.',activities:[{time:'06:30',title:'Saída de Barrie',place:'Barrie → Niagara Falls',duration:'~2h',desc:'Deslocamento.'},{time:'09:00',title:'Niagara Falls',place:'Niagara Falls',duration:'1h30',desc:'Mirantes.'},{time:'10:30',title:'Cruise',place:'Niagara Falls',duration:'1h',desc:'Cruzeiro pelas cataratas.'},{time:'12:00',title:'Almoço',place:'Fallsview / Table Rock',duration:'1h15',desc:'Almoço.'},{time:'13:15',title:'Journey Behind the Falls',place:'Niagara Falls',duration:'1h30',desc:'Experiência atrás das cataratas.'},{time:'15:00',title:'Passeio livre',place:'Niagara Falls',duration:'1h30',desc:'Fotos e pontos próximos.'},{time:'17:00',title:'Retorno a Barrie',place:'Niagara → Barrie',duration:'~2h',desc:'Retorno.'}]},
+  {date:'20/09/2026',dow:'Domingo',title:'Barrie: dia livre / compras',city:'Barrie',icon:'🧳',notes:'Último dia. Organizar malas.',activities:[{time:'09:30',title:'Dia livre',place:'Barrie',duration:'3h',desc:'Passeio leve.'},{time:'13:00',title:'Almoço',place:'Barrie',duration:'1h30',desc:'Almoço.'},{time:'14:30',title:'Compras / organização',place:'Barrie',duration:'2h30',desc:'Últimas compras e malas.'}]},
+  {date:'21/09/2026',dow:'Segunda-feira',title:'Retorno — Barrie → aeroporto',city:'Retorno',icon:'✈️',notes:'Calcular saída conforme horário do voo.',activities:[{time:'Manhã',title:'Saída de Barrie',place:'Barrie → aeroporto',duration:'—',desc:'Retorno ao aeroporto.'}]}
 ];
 
 const key = 'tripmate-lite-days-v1';
@@ -676,34 +59,32 @@ const natureTerms = [
   'cataratas'
 ];
 
-function matchesFilter(day, filter){
+function matchesFilter(day,filter){
   if(filter === 'Todos') return true;
 
   if(filter === 'Barrie'){
-    return (
-      day.city === 'Barrie' ||
+    return day.city === 'Barrie' ||
       /barrie/i.test(
         day.title + ' ' +
-        day.activities.map(a => a.place).join(' ')
-      )
-    );
+        day.activities.map(a=>a.place).join(' ')
+      );
   }
 
   if(filter === 'Toronto'){
-    return (
-      day.city === 'Toronto' ||
+    return day.city === 'Toronto' ||
       /toronto|cn tower|ripley|rom|yorkville|casa loma|spadina|blue jays/i.test(
         day.title + ' ' +
-        day.activities.map(a => a.place).join(' ')
-      )
-    );
+        day.activities.map(a=>a.place).join(' ')
+      );
   }
 
   if(filter === 'Natureza'){
-    return natureTerms.some(
-      term => new RegExp(term,'i').test(
+    return natureTerms.some(term =>
+      new RegExp(term,'i').test(
         day.title + ' ' +
-        day.activities.map(a => a.place + ' ' + a.title).join(' ')
+        day.activities.map(
+          a=>a.place+' '+a.title
+        ).join(' ')
       )
     );
   }
@@ -713,7 +94,9 @@ function matchesFilter(day, filter){
 
 function load(){
   try{
-    return JSON.parse(localStorage.getItem(key)) || initialDays;
+    return JSON.parse(
+      localStorage.getItem(key)
+    ) || initialDays;
   }catch{
     return initialDays;
   }
@@ -736,25 +119,45 @@ function App(){
     }
   },[]);
 
-  const params = new URLSearchParams(window.location.search);
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
 
   const initialTab =
     params.get('view') === 'inicio'
       ? 'inicio'
       : 'roteiro';
 
-  const [days,setDays] = useState(load);
-  const [tab,setTab] = useState(initialTab);
-  const [routeFilter,setRouteFilter] = useState('Todos');
-  const [selected,setSelected] = useState(null);
-  const [editing,setEditing] = useState(null);
-  const [showForm,setShowForm] = useState(false);
+  const [days,setDays] =
+    useState(load);
 
-  const [done,setDone] = useState(
-    () => JSON.parse(
-      localStorage.getItem('tripmate-done') || '{}'
-    )
-  );
+  const [tab,setTab] =
+    useState(initialTab);
+
+  const [routeFilter,setRouteFilter] =
+    useState('Todos');
+
+  const [selected,setSelected] =
+    useState(null);
+
+  const [editing,setEditing] =
+    useState(null);
+
+  const [showForm,setShowForm] =
+    useState(false);
+
+  const [movingDay,setMovingDay] =
+    useState(null);
+
+  const [done,setDone] =
+    useState(
+      () => JSON.parse(
+        localStorage.getItem(
+          'tripmate-done'
+        ) || '{}'
+      )
+    );
 
   useEffect(()=>{
     localStorage.setItem(
@@ -771,64 +174,129 @@ function App(){
   },[done]);
 
   const today =
-    days.find(d => !done[d.date]) ||
+    days.find(d=>!done[d.date]) ||
     days[1];
 
   const completed =
-    Object.values(done).filter(Boolean).length;
+    Object.values(done)
+      .filter(Boolean)
+      .length;
 
-  const addActivity = (dayDate,activity) =>
-    setDays(ds =>
-      ds.map(d =>
-        d.date === dayDate
-          ? {
-              ...d,
-              activities:[
-                ...d.activities,
-                activity
-              ].sort(
-                (a,b) =>
-                  String(a.time).localeCompare(
-                    String(b.time)
-                  )
-              )
-            }
-          : d
-      )
-    );
-
-  const updateActivity =
-    (dayDate,index,activity) =>
+  const addActivity =
+    (dayDate,activity)=>
       setDays(ds =>
         ds.map(d =>
           d.date === dayDate
             ? {
                 ...d,
-                activities:d.activities.map(
-                  (a,i) =>
-                    i === index
-                      ? activity
-                      : a
+                activities:[
+                  ...d.activities,
+                  activity
+                ].sort(
+                  (a,b)=>
+                    String(a.time)
+                      .localeCompare(
+                        String(b.time)
+                      )
                 )
+              }
+            : d
+        )
+      );
+
+  const updateActivity =
+    (dayDate,index,activity)=>
+      setDays(ds =>
+        ds.map(d =>
+          d.date === dayDate
+            ? {
+                ...d,
+                activities:
+                  d.activities.map(
+                    (a,i)=>
+                      i === index
+                        ? activity
+                        : a
+                  )
               }
             : d
         )
       );
 
   const deleteActivity =
-    (dayDate,index) =>
+    (dayDate,index)=>
       setDays(ds =>
         ds.map(d =>
           d.date === dayDate
             ? {
                 ...d,
-                activities:d.activities.filter(
-                  (_,i) => i !== index
-                )
+                activities:
+                  d.activities.filter(
+                    (_,i)=>i !== index
+                  )
               }
             : d
         )
       );
+
+  function moveWholeDay(newDate){
+
+    if(!movingDay) return;
+
+    if(newDate === movingDay.date){
+      alert(
+        'Escolha uma data diferente da atual.'
+      );
+      return;
+    }
+
+    const destination =
+      days.find(d=>d.date === newDate);
+
+    if(destination){
+      alert(
+        `A data ${newDate.slice(0,5)} já possui um roteiro. Na próxima etapa vamos tratar a opção de mesclar ou trocar os dias.`
+      );
+      return;
+    }
+
+    const updated =
+      days.map(d =>
+        d.date === movingDay.date
+          ? {
+              ...d,
+              date:newDate
+            }
+          : d
+      );
+
+    updated.sort(
+      (a,b)=>
+        parseDate(a.date) -
+        parseDate(b.date)
+    );
+
+    setDays(updated);
+
+    setSelected(
+      updated.find(
+        d=>d.date === newDate
+      ) || null
+    );
+
+    setMovingDay(null);
+  }
+
+  function parseDate(date){
+    const [day,month,year] =
+      date.split('/').map(Number);
+
+    return new Date(
+      year,
+      month-1,
+      day
+    ).getTime();
+  }
 
   return (
     <div className="app">
@@ -836,6 +304,7 @@ function App(){
       <header className="topbar">
 
         <div className="brand">
+
           <span className="leaf"></span>
 
           <div>
@@ -843,6 +312,7 @@ function App(){
               Trip<span>Mate</span>
             </b>
           </div>
+
         </div>
 
         <button
@@ -876,14 +346,6 @@ function App(){
           filter={routeFilter}
           setFilter={setRouteFilter}
           onSelect={setSelected}
-          onAdd={(d)=>{
-            setEditing({
-              day:d,
-              date:null,
-              index:null
-            });
-            setShowForm(true);
-          }}
         />
       )}
 
@@ -893,11 +355,14 @@ function App(){
           done={!!done[selected.date]}
           onBack={()=>setSelected(null)}
           onDone={() =>
-            setDone(x => ({
+            setDone(x=>({
               ...x,
               [selected.date]:
                 !x[selected.date]
             }))
+          }
+          onMove={() =>
+            setMovingDay(selected)
           }
           onAdd={()=>{
             setEditing({
@@ -938,7 +403,11 @@ function App(){
       <nav className="bottom">
 
         <button
-          className={tab === 'inicio' ? 'active' : ''}
+          className={
+            tab === 'inicio'
+              ? 'active'
+              : ''
+          }
           onClick={()=>{
             setTab('inicio');
             setSelected(null);
@@ -949,7 +418,11 @@ function App(){
         </button>
 
         <button
-          className={tab === 'roteiro' ? 'active' : ''}
+          className={
+            tab === 'roteiro'
+              ? 'active'
+              : ''
+          }
           onClick={()=>{
             setTab('roteiro');
             setSelected(null);
@@ -960,7 +433,11 @@ function App(){
         </button>
 
         <button
-          className={tab === 'mapa' ? 'active' : ''}
+          className={
+            tab === 'mapa'
+              ? 'active'
+              : ''
+          }
           onClick={()=>{
             setTab('mapa');
             setSelected(null);
@@ -971,7 +448,11 @@ function App(){
         </button>
 
         <button
-          className={tab === 'mais' ? 'active' : ''}
+          className={
+            tab === 'mais'
+              ? 'active'
+              : ''
+          }
           onClick={()=>{
             setTab('mais');
             setSelected(null);
@@ -996,6 +477,7 @@ function App(){
             setShowForm(false)
           }
           onSave={(a)=>{
+
             if(editing.index !== null){
               updateActivity(
                 editing.date,
@@ -1011,6 +493,17 @@ function App(){
 
             setShowForm(false);
           }}
+        />
+      )}
+
+      {movingDay && (
+        <MoveDayModal
+          day={movingDay}
+          days={days}
+          onClose={() =>
+            setMovingDay(null)
+          }
+          onMove={moveWholeDay}
         />
       )}
 
@@ -1124,7 +617,7 @@ function Schedule({
 }){
   const filtered =
     days.filter(
-      d => matchesFilter(d,filter)
+      d=>matchesFilter(d,filter)
     );
 
   return (
@@ -1167,14 +660,18 @@ function Schedule({
           'Barrie',
           'Toronto',
           'Natureza'
-        ].map(f => (
+        ].map(f=>(
           <button
             type="button"
             key={f}
             className={
-              `pill ${filter === f ? 'active' : ''}`
+              `pill ${
+                filter === f
+                  ? 'active'
+                  : ''
+              }`
             }
-            onClick={() =>
+            onClick={()=>
               setFilter(f)
             }
           >
@@ -1192,21 +689,29 @@ function Schedule({
 
       <div className="dayList">
 
-        {filtered.map(d => (
+        {filtered.map(d=>(
 
           <button
             className={
-              `dayRow ${done[d.date] ? 'isDone' : ''}`
+              `dayRow ${
+                done[d.date]
+                  ? 'isDone'
+                  : ''
+              }`
             }
             key={d.date}
-            onClick={() =>
+            onClick={()=>
               onSelect(d)
             }
           >
 
             <div className="dateBox">
-              <b>{d.date.slice(0,2)}</b>
-              <small>{d.date.slice(3,5)}</small>
+              <b>
+                {d.date.slice(0,2)}
+              </b>
+              <small>
+                {d.date.slice(3,5)}
+              </small>
             </div>
 
             <div className="dayIcon">
@@ -1252,6 +757,7 @@ function DayDetail({
   done,
   onBack,
   onDone,
+  onMove,
   onAdd,
   onEdit,
   onDelete
@@ -1285,7 +791,7 @@ function DayDetail({
 
       <div className="timeline">
 
-        {day.activities.map((a,i) => (
+        {day.activities.map((a,i)=>(
 
           <div
             className="activity"
@@ -1312,7 +818,7 @@ function DayDetail({
 
                 <button
                   className="miniEdit"
-                  onClick={() =>
+                  onClick={()=>
                     onEdit(i)
                   }
                 >
@@ -1343,7 +849,7 @@ function DayDetail({
                 </a>
 
                 <button
-                  onClick={() =>
+                  onClick={()=>
                     onDelete(i)
                   }
                 >
@@ -1365,14 +871,28 @@ function DayDetail({
 
         <button
           className="secondary"
-          onClick={onAdd}
+          onClick={onMove}
         >
-          <Plus size={18}/>
-          Adicionar atividade
+          <Move size={18}/>
+          Mover dia
         </button>
 
         <button
-          className={`primary ${done ? 'done' : ''}`}
+          className="primary"
+          onClick={onAdd}
+        >
+          <Plus size={18}/>
+          Adicionar
+        </button>
+
+      </div>
+
+      <div className="detailActions">
+
+        <button
+          className={`primary ${
+            done ? 'done' : ''
+          }`}
           onClick={onDone}
         >
           <Check size={18}/>
@@ -1387,7 +907,109 @@ function DayDetail({
   );
 }
 
+function MoveDayModal({
+  day,
+  days,
+  onClose,
+  onMove
+}){
+
+  const availableDates =
+    days.filter(
+      d=>d.date !== day.date
+    );
+
+  const [newDate,setNewDate] =
+    useState(
+      availableDates[0]?.date || ''
+    );
+
+  return (
+    <div className="modal">
+
+      <div className="sheet">
+
+        <div className="sheetHead">
+
+          <h2>
+            Mover dia
+          </h2>
+
+          <button
+            className="iconBtn"
+            onClick={onClose}
+          >
+            <X/>
+          </button>
+
+        </div>
+
+        <p
+          style={{
+            color:'#718097',
+            fontSize:'13px',
+            lineHeight:'1.45'
+          }}
+        >
+          Você está movendo:
+          <br/>
+          <strong>
+            {day.date.slice(0,5)} · {day.title}
+          </strong>
+        </p>
+
+        <label>
+          Nova data
+
+          <select
+            value={newDate}
+            onChange={e=>
+              setNewDate(e.target.value)
+            }
+            style={{
+              display:'block',
+              width:'100%',
+              marginTop:'6px',
+              border:'1px solid #dbe2ec',
+              borderRadius:'11px',
+              padding:'11px',
+              font:'inherit',
+              fontSize:'13px',
+              background:'#fff'
+            }}
+          >
+
+            {availableDates.map(d=>(
+              <option
+                key={d.date}
+                value={d.date}
+              >
+                {d.date.slice(0,5)} · {d.dow}
+              </option>
+            ))}
+
+          </select>
+
+        </label>
+
+        <button
+          className="primary full"
+          disabled={!newDate}
+          onClick={()=>
+            onMove(newDate)
+          }
+        >
+          Mover dia
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+
 function MapScreen({days}){
+
   return (
     <main className="content">
 
@@ -1425,18 +1047,18 @@ function MapScreen({days}){
       <div className="placeList">
 
         {days
-          .flatMap(d =>
-            d.activities.map(
-              a => a.place
+          .flatMap(
+            d=>d.activities.map(
+              a=>a.place
             )
           )
           .filter(
-            (x,i,a) =>
+            (x,i,a)=>
               x &&
               a.indexOf(x) === i
           )
           .slice(0,18)
-          .map(p => (
+          .map(p=>(
 
             <a
               key={p}
@@ -1444,9 +1066,15 @@ function MapScreen({days}){
               target="_blank"
               rel="noreferrer"
             >
+
               <MapPin size={17}/>
-              <span>{p}</span>
+
+              <span>
+                {p}
+              </span>
+
               <ExternalLink size={15}/>
+
             </a>
 
           ))}
@@ -1462,6 +1090,7 @@ function ActivityForm({
   onClose,
   onSave
 }){
+
   const [a,setA] =
     useState(
       initial || {
@@ -1500,7 +1129,7 @@ function ActivityForm({
 
           <input
             value={a.time}
-            onChange={e =>
+            onChange={e=>
               setA({
                 ...a,
                 time:e.target.value
@@ -1516,7 +1145,7 @@ function ActivityForm({
           <input
             autoFocus
             value={a.title}
-            onChange={e =>
+            onChange={e=>
               setA({
                 ...a,
                 title:e.target.value
@@ -1531,7 +1160,7 @@ function ActivityForm({
 
           <input
             value={a.place}
-            onChange={e =>
+            onChange={e=>
               setA({
                 ...a,
                 place:e.target.value
@@ -1546,7 +1175,7 @@ function ActivityForm({
 
           <input
             value={a.duration}
-            onChange={e =>
+            onChange={e=>
               setA({
                 ...a,
                 duration:e.target.value
@@ -1562,7 +1191,7 @@ function ActivityForm({
           <textarea
             rows="3"
             value={a.desc}
-            onChange={e =>
+            onChange={e=>
               setA({
                 ...a,
                 desc:e.target.value
@@ -1575,7 +1204,7 @@ function ActivityForm({
         <button
           className="primary full"
           disabled={!a.title.trim()}
-          onClick={() =>
+          onClick={()=>
             onSave(a)
           }
         >
@@ -1592,6 +1221,7 @@ function MoreScreen({
   completed,
   days
 }){
+
   return (
     <main className="content more">
 
