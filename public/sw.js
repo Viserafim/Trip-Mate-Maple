@@ -1,4 +1,4 @@
-const CACHE = 'tripmate-v4-shell-v1';
+const CACHE = 'tripmate-v4-shell-v2';
 const SHELL = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './icon-canada.svg', './toronto-hero.svg'];
 
 self.addEventListener('install', event => {
