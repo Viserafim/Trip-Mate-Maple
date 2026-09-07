@@ -41,3 +41,11 @@ body{background:radial-gradient(circle at 50% -10%,#dcecfb 0,#eef3f8 32%,#f4f7fb
   .detail{padding-bottom:max(150px,calc(140px + env(safe-area-inset-bottom)))}
   .bottom{padding-bottom:max(10px,calc(10px + env(safe-area-inset-bottom)))}
 }
+
+/* CORREÇÃO IPHONE — SAFE AREA SUPERIOR */
+@supports(padding:max(0px)){
+  .topbar{
+    height:calc(76px + env(safe-area-inset-top));
+    padding-top:env(safe-area-inset-top);
+  }
+}
