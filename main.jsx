@@ -23,6 +23,7 @@ const initialDays = [
 
 const key = 'tripmate-lite-days-v1';
 const natureTerms = ['niagara','blue mountain','wasaga','lake simcoe','waterfront','islands','natureza','parque','montanha','praia','falls','cruise','cataratas'];
+
 function matchesFilter(day, filter){
  if(filter==='Todos') return true;
  if(filter==='Barrie') return day.city==='Barrie' || /barrie/i.test(day.title+' '+day.activities.map(a=>a.place).join(' '));
@@ -30,32 +31,441 @@ function matchesFilter(day, filter){
  if(filter==='Natureza') return natureTerms.some(t=>new RegExp(t,'i').test(day.title+' '+day.activities.map(a=>a.place+' '+a.title).join(' ')));
  return true;
 }
-function load(){try{return JSON.parse(localStorage.getItem(key))||initialDays}catch{return initialDays}}
-function mapsUrl(place){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`}
+
+function load(){
+ try{return JSON.parse(localStorage.getItem(key))||initialDays}
+ catch{return initialDays}
+}
+
+function mapsUrl(place){
+ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`
+}
+
+function dateToInput(date){
+ const [d,m,y]=date.split('/');
+ return `${y}-${m}-${d}`;
+}
+
+function inputToDate(value){
+ const [y,m,d]=value.split('-');
+ return `${d}/${m}/${y}`;
+}
+
+function getDow(date){
+ const [d,m,y]=date.split('/').map(Number);
+ const days=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+ return days[new Date(y,m-1,d).getDay()];
+}
+
+function dateSort(a,b){
+ const [da,ma,ya]=a.date.split('/').map(Number);
+ const [db,mb,yb]=b.date.split('/').map(Number);
+ return new Date(ya,ma-1,da)-new Date(yb,mb-1,db);
+}
+
 function App(){
- const [days,setDays]=useState(load); const [tab,setTab]=useState('roteiro'); const [routeFilter,setRouteFilter]=useState('Todos'); const [selected,setSelected]=useState(null); const [editing,setEditing]=useState(null); const [showForm,setShowForm]=useState(false); const [done,setDone]=useState(()=>JSON.parse(localStorage.getItem('tripmate-done')||'{}'));
- useEffect(()=>localStorage.setItem(key,JSON.stringify(days)),[days]); useEffect(()=>localStorage.setItem('tripmate-done',JSON.stringify(done)),[done]);
+ const [days,setDays]=useState(load);
+ const [tab,setTab]=useState('roteiro');
+ const [routeFilter,setRouteFilter]=useState('Todos');
+ const [selected,setSelected]=useState(null);
+ const [editing,setEditing]=useState(null);
+ const [showForm,setShowForm]=useState(false);
+ const [editingDay,setEditingDay]=useState(null);
+ const [done,setDone]=useState(()=>JSON.parse(localStorage.getItem('tripmate-done')||'{}'));
+
+ useEffect(()=>localStorage.setItem(key,JSON.stringify(days)),[days]);
+ useEffect(()=>localStorage.setItem('tripmate-done',JSON.stringify(done)),[done]);
+
  const today=days.find(d=>!done[d.date])||days[1];
  const completed=Object.values(done).filter(Boolean).length;
- const addActivity=(dayDate,activity)=>setDays(ds=>ds.map(d=>d.date===dayDate?{...d,activities:[...d.activities,activity].sort((a,b)=>String(a.time).localeCompare(String(b.time)))}:d));
- const updateActivity=(dayDate,index,activity)=>setDays(ds=>ds.map(d=>d.date===dayDate?{...d,activities:d.activities.map((a,i)=>i===index?activity:a)}:d));
- const deleteActivity=(dayDate,index)=>setDays(ds=>ds.map(d=>d.date===dayDate?{...d,activities:d.activities.filter((_,i)=>i!==index)}:d));
+
+ const addActivity=(dayDate,activity)=>
+  setDays(ds=>ds.map(d=>d.date===dayDate?{...d,activities:[...d.activities,activity].sort((a,b)=>String(a.time).localeCompare(String(b.time)))}:d));
+
+ const updateActivity=(dayDate,index,activity)=>
+  setDays(ds=>ds.map(d=>d.date===dayDate?{...d,activities:d.activities.map((a,i)=>i===index?activity:a)}:d));
+
+ const deleteActivity=(dayDate,index)=>
+  setDays(ds=>ds.map(d=>d.date===dayDate?{...d,activities:d.activities.filter((_,i)=>i!==index)}:d));
+
+ const updateDay=(oldDate,updatedDay)=>{
+  if(updatedDay.date!==oldDate && days.some(d=>d.date===updatedDay.date)){
+   alert('Já existe outro dia com essa data.');
+   return;
+  }
+
+  setDays(ds=>ds.map(d=>d.date===oldDate?updatedDay:d).sort(dateSort));
+
+  setDone(prev=>{
+   const next={...prev};
+   if(oldDate!==updatedDay.date && Object.prototype.hasOwnProperty.call(next,oldDate)){
+    next[updatedDay.date]=next[oldDate];
+    delete next[oldDate];
+   }
+   return next;
+  });
+
+  setSelected(updatedDay);
+  setEditingDay(null);
+ };
+
  return <div className="app">
-  <header className="topbar"><div className="brand"><span className="leaf">🍁</span><div><b>Trip<span>Mate</span></b><small>Lite</small></div></div><button className="iconBtn" onClick={()=>alert('TripMate Lite salva o roteiro no próprio aparelho.')}><Menu size={21}/></button></header>
-  {tab==='inicio' && <HomeScreen day={today} completed={completed} onOpen={()=>{setTab('roteiro');setSelected(today)}}/>}
-  {tab==='roteiro' && !selected && <Schedule days={days} done={done} filter={routeFilter} setFilter={setRouteFilter} onSelect={setSelected} onAdd={(d)=>{setEditing({day:d,date:null,index:null});setShowForm(true)}}/>}
-  {tab==='roteiro' && selected && <DayDetail day={selected} done={!!done[selected.date]} onBack={()=>setSelected(null)} onDone={()=>setDone(x=>({...x,[selected.date]:!x[selected.date]}))} onAdd={()=>{setEditing({day:selected,date:selected.date,index:null});setShowForm(true)}} onEdit={(i)=>{setEditing({day:selected,date:selected.date,index:i});setShowForm(true)}} onDelete={(i)=>deleteActivity(selected.date,i)}/>} 
+  <header className="topbar">
+   <div className="brand">
+    <span className="leaf">🍁</span>
+    <div><b>Trip<span>Mate</span></b><small>Lite</small></div>
+   </div>
+   <button className="iconBtn" onClick={()=>alert('TripMate Lite salva o roteiro no próprio aparelho.')}><Menu size={21}/></button>
+  </header>
+
+  {tab==='inicio' &&
+   <HomeScreen day={today} completed={completed} onOpen={()=>{setTab('roteiro');setSelected(today)}}/>
+  }
+
+  {tab==='roteiro' && !selected &&
+   <Schedule
+    days={days}
+    done={done}
+    filter={routeFilter}
+    setFilter={setRouteFilter}
+    onSelect={setSelected}
+    onAdd={(d)=>{setEditing({day:d,date:null,index:null});setShowForm(true)}}
+   />
+  }
+
+  {tab==='roteiro' && selected &&
+   <DayDetail
+    day={selected}
+    done={!!done[selected.date]}
+    onBack={()=>setSelected(null)}
+    onDone={()=>setDone(x=>({...x,[selected.date]:!x[selected.date]}))}
+    onEditDay={()=>setEditingDay(selected)}
+    onAdd={()=>{setEditing({day:selected,date:selected.date,index:null});setShowForm(true)}}
+    onEdit={(i)=>{setEditing({day:selected,date:selected.date,index:i});setShowForm(true)}}
+    onDelete={(i)=>deleteActivity(selected.date,i)}
+   />
+  }
+
   {tab==='mapa' && <MapScreen days={days}/>}
-  {tab==='mais' && <MoreScreen completed={completed} days={days}/>} 
-  <nav className="bottom"><button className={tab==='inicio'?'active':''} onClick={()=>{setTab('inicio');setSelected(null)}}><Home/><span>Início</span></button><button className={tab==='roteiro'?'active':''} onClick={()=>{setTab('roteiro');setSelected(null)}}><CalendarDays/><span>Roteiro</span></button><button className={tab==='mapa'?'active':''} onClick={()=>{setTab('mapa');setSelected(null)}}><Map/><span>Mapa</span></button><button className={tab==='mais'?'active':''} onClick={()=>{setTab('mais');setSelected(null)}}><MoreHorizontal/><span>Mais</span></button></nav>
-  {showForm && <ActivityForm initial={editing.index!==null?editing.day.activities[editing.index]:null} onClose={()=>setShowForm(false)} onSave={(a)=>{editing.index!==null?updateActivity(editing.date,editing.index,a):addActivity(editing.day.date,a);setShowForm(false)}}/>}
+  {tab==='mais' && <MoreScreen completed={completed} days={days}/>}
+
+  <nav className="bottom">
+   <button className={tab==='inicio'?'active':''} onClick={()=>{setTab('inicio');setSelected(null)}}><Home/><span>Início</span></button>
+   <button className={tab==='roteiro'?'active':''} onClick={()=>{setTab('roteiro');setSelected(null)}}><CalendarDays/><span>Roteiro</span></button>
+   <button className={tab==='mapa'?'active':''} onClick={()=>{setTab('mapa');setSelected(null)}}><Map/><span>Mapa</span></button>
+   <button className={tab==='mais'?'active':''} onClick={()=>{setTab('mais');setSelected(null)}}><MoreHorizontal/><span>Mais</span></button>
+  </nav>
+
+  {showForm &&
+   <ActivityForm
+    initial={editing.index!==null?editing.day.activities[editing.index]:null}
+    onClose={()=>setShowForm(false)}
+    onSave={(a)=>{
+     editing.index!==null
+      ? updateActivity(editing.date,editing.index,a)
+      : addActivity(editing.day.date,a);
+     setShowForm(false);
+    }}
+   />
+  }
+
+  {editingDay &&
+   <DayForm
+    initial={editingDay}
+    onClose={()=>setEditingDay(null)}
+    onSave={(updated)=>updateDay(editingDay.date,updated)}
+   />
+  }
  </div>
 }
-function HomeScreen({day,completed,onOpen}){return <main><section className="hero"><div className="heroPhoto"><div className="heroBadge">TRIPMATE · CANADÁ</div><div className="heroOverlay"><span>🍁</span><h1>Canadá 2026</h1><p>Barrie + Toronto</p><small><CalendarDays size={14}/> 07/09 → 21/09/2026</small></div><div className="heroPin">Toronto</div></div><div className="nextCard"><div className="eyebrow">PRÓXIMO DIA</div><div className="date">{day.date.slice(0,5)} <span>• {day.dow}</span></div><h2>{day.icon} {day.title}</h2><p>{day.activities.length} atividades · roteiro offline</p><button className="primary" onClick={onOpen}>Ver roteiro <ChevronRight size={18}/></button></div><div className="stats"><div><strong>15</strong><span>dias</span></div><div><strong>14</strong><span>roteiros</span></div><div><strong>{completed}</strong><span>concluídos</span></div></div></section></main>}
-function Schedule({days,done,filter,setFilter,onSelect,onAdd}){const filtered=days.filter(d=>matchesFilter(d,filter));return <main className="content"><div className="pageTitle"><div><div className="eyebrow">CANADÁ 2026</div><h1>Roteiro da viagem</h1><p>Explore o roteiro por região ou veja tudo em ordem.</p></div><div className="routeSearch"><Search size={17}/><span>{filtered.length} {filtered.length===1?'dia':'dias'}</span></div></div><div className="filter">{['Todos','Barrie','Toronto','Natureza'].map(f=><button type="button" key={f} className={`pill ${filter===f?'active':''}`} onClick={()=>setFilter(f)}>{f}</button>)}</div><div className="filterHint">{filter==='Todos'?'Todos os dias da viagem':`Mostrando apenas: ${filter}`}</div><div className="dayList">{filtered.map(d=><button className={`dayRow ${done[d.date]?'isDone':''}`} key={d.date} onClick={()=>onSelect(d)}><div className="dateBox"><b>{d.date.slice(0,2)}</b><small>{d.date.slice(3,5)}</small></div><div className="dayIcon">{d.icon}</div><div className="dayText"><small>{d.dow}</small><strong>{d.title}</strong><span>{d.city}</span></div><ChevronRight size={19}/></button>)}</div>{filtered.length===0&&<div className="emptyState">Nenhum dia encontrado nesta categoria.</div>}</main>}
-function DayDetail({day,done,onBack,onDone,onAdd,onEdit,onDelete}){return <main className="detail"><button className="back" onClick={onBack}><ArrowLeft size={19}/> Roteiro</button><div className="detailHead"><div className="eyebrow">{day.date} · {day.dow}</div><h1>{day.icon} {day.title}</h1><p>{day.notes}</p></div><div className="timeline">{day.activities.map((a,i)=><div className="activity" key={i}><div className="time"><b>{a.time}</b><span></span></div><div className="activityCard"><div className="cardTop"><h3>{a.title}</h3><button className="miniEdit" onClick={()=>onEdit(i)}><Pencil size={15}/></button></div><p><MapPin size={14}/> {a.place}</p><p><Clock3 size={14}/> {a.duration}</p><div className="actions"><a href={mapsUrl(a.place)} target="_blank" rel="noreferrer"><Navigation size={15}/> Maps</a><button onClick={()=>onDelete(i)}><Trash2 size={15}/> Excluir</button></div></div></div>)}</div><div className="detailActions"><button className="secondary" onClick={onAdd}><Plus size={18}/> Adicionar atividade</button><button className={`primary ${done?'done':''}`} onClick={onDone}>{done?<Check size={18}/>:<Check size={18}/>} {done?'Dia concluído':'Marcar como concluído'}</button></div></main>}
-function MapScreen({days}){return <main className="content"><div className="pageTitle"><div className="eyebrow">MAPA</div><h1>Locais do roteiro</h1><p>Abra cada ponto diretamente no Google Maps.</p></div><div className="mapCard"><div className="fakeMap"><span>📍 Barrie</span><span>📍 Toronto</span><span>📍 Blue Mountain</span><span>📍 Niagara Falls</span><div className="routeLine"></div></div></div><div className="placeList">{days.flatMap(d=>d.activities.map(a=>a.place)).filter((x,i,a)=>x&&a.indexOf(x)===i).slice(0,18).map(p=><a key={p} href={mapsUrl(p)} target="_blank" rel="noreferrer"><MapPin size={17}/><span>{p}</span><ExternalLink size={15}/></a>)}</div></main>}
-function ActivityForm({initial,onClose,onSave}){const [a,setA]=useState(initial||{time:'09:00',title:'',place:'',duration:'1h',desc:''});return <div className="modal"><div className="sheet"><div className="sheetHead"><h2>{initial?'Editar atividade':'Nova atividade'}</h2><button className="iconBtn" onClick={onClose}><X/></button></div><label>Horário<input value={a.time} onChange={e=>setA({...a,time:e.target.value})}/></label><label>Nome<input autoFocus value={a.title} onChange={e=>setA({...a,title:e.target.value})}/></label><label>Local<input value={a.place} onChange={e=>setA({...a,place:e.target.value})}/></label><label>Duração<input value={a.duration} onChange={e=>setA({...a,duration:e.target.value})}/></label><label>Descrição<textarea rows="3" value={a.desc} onChange={e=>setA({...a,desc:e.target.value})}/></label><button className="primary full" disabled={!a.title.trim()} onClick={()=>onSave(a)}>Salvar atividade</button></div></div>}
-createRoot(document.getElementById('root')).render(<App/>);
 
-function MoreScreen({completed,days}){return <main className="content more"><div className="pageTitle"><div><div className="eyebrow">TRIPMATE LITE</div><h1>Mais</h1><p>Informações rápidas sobre seu roteiro.</p></div></div><div className="moreHero"><div className="moreIcon">🍁</div><div><strong>Canadá 2026</strong><span>Barrie + Toronto · 15 dias</span></div></div><div className="infoList"><div><Info size={18}/><span><b>Roteiro offline</b><small>Suas alterações ficam salvas neste aparelho.</small></span></div><div><Check size={18}/><span><b>{completed} dias concluídos</b><small>Marque cada dia conforme avançar na viagem.</small></span></div><div><CalendarDays size={18}/><span><b>{days.length} dias planejados</b><small>De 07/09 a 21/09/2026.</small></span></div></div></main>}
+function HomeScreen({day,completed,onOpen}){
+ return <main>
+  <section className="hero">
+   <div className="heroPhoto">
+    <div className="heroBadge">TRIPMATE · CANADÁ</div>
+    <div className="heroOverlay">
+     <span>🍁</span>
+     <h1>Canadá 2026</h1>
+     <p>Barrie + Toronto</p>
+     <small><CalendarDays size={14}/> 07/09 → 21/09/2026</small>
+    </div>
+    <div className="heroPin">Toronto</div>
+   </div>
+
+   <div className="nextCard">
+    <div className="eyebrow">PRÓXIMO DIA</div>
+    <div className="date">{day.date.slice(0,5)} <span>• {day.dow}</span></div>
+    <h2>{day.icon} {day.title}</h2>
+    <p>{day.activities.length} atividades · roteiro offline</p>
+    <button className="primary" onClick={onOpen}>Ver roteiro <ChevronRight size={18}/></button>
+   </div>
+
+   <div className="stats">
+    <div><strong>15</strong><span>dias</span></div>
+    <div><strong>14</strong><span>roteiros</span></div>
+    <div><strong>{completed}</strong><span>concluídos</span></div>
+   </div>
+  </section>
+ </main>
+}
+
+function Schedule({days,done,filter,setFilter,onSelect,onAdd}){
+ const filtered=days.filter(d=>matchesFilter(d,filter));
+
+ return <main className="content">
+  <div className="pageTitle">
+   <div>
+    <div className="eyebrow">CANADÁ 2026</div>
+    <h1>Roteiro da viagem</h1>
+    <p>Explore o roteiro por região ou veja tudo em ordem.</p>
+   </div>
+   <div className="routeSearch"><Search size={17}/><span>{filtered.length} {filtered.length===1?'dia':'dias'}</span></div>
+  </div>
+
+  <div className="filter">
+   {['Todos','Barrie','Toronto','Natureza'].map(f=>
+    <button type="button" key={f} className={`pill ${filter===f?'active':''}`} onClick={()=>setFilter(f)}>{f}</button>
+   )}
+  </div>
+
+  <div className="filterHint">{filter==='Todos'?'Todos os dias da viagem':`Mostrando apenas: ${filter}`}</div>
+
+  <div className="dayList">
+   {filtered.map(d=>
+    <button className={`dayRow ${done[d.date]?'isDone':''}`} key={d.date} onClick={()=>onSelect(d)}>
+     <div className="dateBox"><b>{d.date.slice(0,2)}</b><small>{d.date.slice(3,5)}</small></div>
+     <div className="dayIcon">{d.icon}</div>
+     <div className="dayText"><small>{d.dow}</small><strong>{d.title}</strong><span>{d.city}</span></div>
+     <ChevronRight size={19}/>
+    </button>
+   )}
+  </div>
+
+  {filtered.length===0&&<div className="emptyState">Nenhum dia encontrado nesta categoria.</div>}
+ </main>
+}
+
+function DayDetail({day,done,onBack,onDone,onEditDay,onAdd,onEdit,onDelete}){
+ return <main className="detail">
+  <button className="back" onClick={onBack}><ArrowLeft size={19}/> Roteiro</button>
+
+  <div className="detailHead">
+   <div className="eyebrow">{day.date} · {day.dow}</div>
+   <h1>{day.icon} {day.title}</h1>
+   <p>{day.notes}</p>
+
+   <button className="secondary dayEditButton" onClick={onEditDay}>
+    <Pencil size={17}/> Editar dia
+   </button>
+  </div>
+
+  <div className="timeline">
+   {day.activities.map((a,i)=>
+    <div className="activity" key={i}>
+     <div className="time"><b>{a.time}</b><span></span></div>
+
+     <div className="activityCard">
+      <div className="cardTop">
+       <h3>{a.title}</h3>
+       <button className="miniEdit" onClick={()=>onEdit(i)}><Pencil size={15}/></button>
+      </div>
+
+      <p><MapPin size={14}/> {a.place}</p>
+      <p><Clock3 size={14}/> {a.duration}</p>
+
+      {a.desc && <p className="activityDesc">{a.desc}</p>}
+
+      <div className="actions">
+       <a href={mapsUrl(a.place)} target="_blank" rel="noreferrer"><Navigation size={15}/> Maps</a>
+       <button onClick={()=>onDelete(i)}><Trash2 size={15}/> Excluir</button>
+      </div>
+     </div>
+    </div>
+   )}
+  </div>
+
+  <div className="detailActions">
+   <button className="secondary" onClick={onAdd}><Plus size={18}/> Adicionar atividade</button>
+   <button className={`primary ${done?'done':''}`} onClick={onDone}>
+    <Check size={18}/> {done?'Dia concluído':'Marcar como concluído'}
+   </button>
+  </div>
+ </main>
+}
+
+function MapScreen({days}){
+ return <main className="content">
+  <div className="pageTitle">
+   <div className="eyebrow">MAPA</div>
+   <h1>Locais do roteiro</h1>
+   <p>Abra cada ponto diretamente no Google Maps.</p>
+  </div>
+
+  <div className="mapCard">
+   <div className="fakeMap">
+    <span>📍 Barrie</span>
+    <span>📍 Toronto</span>
+    <span>📍 Blue Mountain</span>
+    <span>📍 Niagara Falls</span>
+    <div className="routeLine"></div>
+   </div>
+  </div>
+
+  <div className="placeList">
+   {days.flatMap(d=>d.activities.map(a=>a.place)).filter((x,i,a)=>x&&a.indexOf(x)===i).slice(0,18).map(p=>
+    <a key={p} href={mapsUrl(p)} target="_blank" rel="noreferrer">
+     <MapPin size={17}/><span>{p}</span><ExternalLink size={15}/>
+    </a>
+   )}
+  </div>
+ </main>
+}
+
+function ActivityForm({initial,onClose,onSave}){
+ const [a,setA]=useState(initial||{time:'09:00',title:'',place:'',duration:'1h',desc:''});
+
+ return <div className="modal">
+  <div className="sheet">
+   <div className="sheetHead">
+    <h2>{initial?'Editar atividade':'Nova atividade'}</h2>
+    <button className="iconBtn" onClick={onClose}><X/></button>
+   </div>
+
+   <label>Horário
+    <input value={a.time} onChange={e=>setA({...a,time:e.target.value})}/>
+   </label>
+
+   <label>Nome
+    <input autoFocus value={a.title} onChange={e=>setA({...a,title:e.target.value})}/>
+   </label>
+
+   <label>Local
+    <input value={a.place} onChange={e=>setA({...a,place:e.target.value})}/>
+   </label>
+
+   <label>Duração
+    <input value={a.duration} onChange={e=>setA({...a,duration:e.target.value})}/>
+   </label>
+
+   <label>Descrição
+    <textarea rows="3" value={a.desc} onChange={e=>setA({...a,desc:e.target.value})}/>
+   </label>
+
+   <button className="primary full" disabled={!a.title.trim()} onClick={()=>onSave(a)}>
+    Salvar atividade
+   </button>
+  </div>
+ </div>
+}
+
+function DayForm({initial,onClose,onSave}){
+ const [d,setD]=useState({
+  date:dateToInput(initial.date),
+  title:initial.title||'',
+  city:initial.city||'',
+  notes:initial.notes||''
+ });
+
+ const previewDate=d.date?inputToDate(d.date):'';
+ const previewDow=previewDate?getDow(previewDate):'';
+
+ return <div className="modal">
+  <div className="sheet">
+   <div className="sheetHead">
+    <h2>Editar dia</h2>
+    <button className="iconBtn" onClick={onClose}><X/></button>
+   </div>
+
+   <label>Data
+    <input
+     type="date"
+     value={d.date}
+     onChange={e=>setD({...d,date:e.target.value})}
+    />
+   </label>
+
+   <div className="dowPreview">
+    <CalendarDays size={16}/>
+    <span>{previewDow||'Selecione uma data'}</span>
+   </div>
+
+   <label>Título
+    <input
+     autoFocus
+     value={d.title}
+     onChange={e=>setD({...d,title:e.target.value})}
+    />
+   </label>
+
+   <label>Cidade / região
+    <input
+     value={d.city}
+     onChange={e=>setD({...d,city:e.target.value})}
+    />
+   </label>
+
+   <label>Observações
+    <textarea
+     rows="4"
+     value={d.notes}
+     onChange={e=>setD({...d,notes:e.target.value})}
+    />
+   </label>
+
+   <button
+    className="primary full"
+    disabled={!d.date||!d.title.trim()}
+    onClick={()=>{
+     const newDate=inputToDate(d.date);
+     onSave({
+      ...initial,
+      date:newDate,
+      dow:getDow(newDate),
+      title:d.title.trim(),
+      city:d.city.trim(),
+      notes:d.notes.trim()
+     });
+    }}
+   >
+    Salvar alterações
+   </button>
+  </div>
+ </div>
+}
+
+function MoreScreen({completed,days}){
+ return <main className="content more">
+  <div className="pageTitle">
+   <div>
+    <div className="eyebrow">TRIPMATE LITE</div>
+    <h1>Mais</h1>
+    <p>Informações rápidas sobre seu roteiro.</p>
+   </div>
+  </div>
+
+  <div className="moreHero">
+   <div className="moreIcon">🍁</div>
+   <div><strong>Canadá 2026</strong><span>Barrie + Toronto · 15 dias</span></div>
+  </div>
+
+  <div className="infoList">
+   <div>
+    <Info size={18}/>
+    <span><b>Roteiro offline</b><small>Suas alterações ficam salvas neste aparelho.</small></span>
+   </div>
+
+   <div>
+    <Check size={18}/>
+    <span><b>{completed} dias concluídos</b><small>Marque cada dia conforme avançar na viagem.</small></span>
+   </div>
+
+   <div>
+    <CalendarDays size={18}/>
+    <span><b>{days.length} dias planejados</b><small>De 07/09 a 21/09/2026.</small></span>
+   </div>
+  </div>
+ </main>
+}
+
+createRoot(document.getElementById('root')).render(<App/>);
